@@ -23,7 +23,7 @@ void ASkyGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//@TODO initial setup of unit templates
+	Config.Setup();
 	
 	APlayerController* controller = GEngine->GetFirstLocalPlayerController(GetWorld());
 	ASkyHUD* hud = controller->GetHUD<ASkyHUD>();
@@ -32,7 +32,11 @@ void ASkyGameMode::BeginPlay()
 
 const FUnitTemplate& ASkyGameMode::GetUnitTemplate(const FName& UnitKey)
 {
-	//@TODO parse data table
+	if(FUnitTemplate* unitTemplate = Config.UnitTemplates.Find(UnitKey))
+	{
+		return *unitTemplate;
+	}
+	check(false);
 	static FUnitTemplate temp;
 	return temp;
 }
