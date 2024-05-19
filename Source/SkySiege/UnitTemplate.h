@@ -43,7 +43,7 @@ struct FUnitTemplate
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
 	float ShopWeight = 1.0f;
 
-	UPROPERTY(EditAnywhere, Category="Grid")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
 	TArray<FCoordinates> GridShape;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tags")

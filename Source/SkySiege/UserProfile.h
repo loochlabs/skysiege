@@ -165,9 +165,6 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool IsTransactionActive();
 
-	//@CLEAN
-	//void BeginCellHighlight(int32 Row, int32 Col);
-
 	UFUNCTION()
 	void HandleGridFocused(AGridCellActor* Cell);
 	
