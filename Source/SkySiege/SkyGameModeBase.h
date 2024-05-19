@@ -19,7 +19,7 @@ class SKYSIEGE_API ASkyGameMode : public AGameModeBase
 public:
 
 	UFUNCTION(BlueprintPure,  meta=(WorldContext="WorldContextObject"))
-	static ASkyGameMode* Get(UObject* WorldContext);
+	static ASkyGameMode* Get(UObject* WorldContextObject);
 
 	virtual void BeginPlay() override;
 

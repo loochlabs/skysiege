@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "StackWidget.h"
 #include "OverlayWidget.generated.h"
 
 struct FBattleSimulation;
 
 UCLASS()
-class SKYSIEGE_API UOverlayWidget : public UUserWidget
+class SKYSIEGE_API UOverlayWidget : public UStackWidget
 {
 	GENERATED_BODY()
 

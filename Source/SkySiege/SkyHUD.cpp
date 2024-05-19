@@ -60,7 +60,7 @@ void ASkyHUD::ShowGameOverlay()
 	
 	OverlayWidget = CreateWidget<UOverlayWidget>(GetOwningPlayerController(), OverlayWidgetClass);
 	AddWidgetToViewport(OverlayWidget);
-	//Open(OverlayWidget); @TODO
+	Open(OverlayWidget);
 }
 
 void ASkyHUD::ShowBattle(FBattleSimulation& Sim)
