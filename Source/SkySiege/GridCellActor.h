@@ -6,9 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "GridCellActor.generated.h"
 
+class ASkyGrid;
+class AGridUnitActor;
 struct FUnitTemplate;
 struct FGameplayTagContainer;
-class AGridUnitActor;
 enum class ECellHighlight : uint8;
 enum class ECellOrientation : uint8;
 
@@ -19,7 +20,7 @@ class SKYSIEGE_API AGridCellActor : public AActor
 	
 public:
 
-	void Setup(int32 row, int32 col);
+	void Setup(ASkyGrid* ParentGrid, int32 InRow, int32 InCol);
 	void Teardown();
 
 	void SetSelectable(bool bEnable);
@@ -43,13 +44,13 @@ public:
 	bool HasUnitTags(const FGameplayTagContainer& InTags);
 	
 	UFUNCTION(BlueprintCallable)
-	void BeginHighlight();
+	void BeginFocus();
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void BeginHighlightBP();
 	
 	UFUNCTION(BlueprintCallable)
-	void EndHighlight();
+	void EndFocus();
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void EndHighlightBP();
@@ -66,11 +67,14 @@ public:
 	void InsertUnit(AGridUnitActor* Unit);
 	void RemoveUnit(AGridUnitActor* Unit);
 
-	UPROPERTY(SaveGame, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	int32 Row = -1;
 	
-	UPROPERTY(SaveGame, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	int32 Col = -1;
+
+	UPROPERTY(BlueprintReadOnly)
+	ASkyGrid* Grid;
 	
 	UPROPERTY(BlueprintReadWrite)
 	TArray<AGridUnitActor*> UnitActors;

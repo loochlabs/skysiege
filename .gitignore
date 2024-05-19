@@ -86,6 +86,8 @@ enc_temp_folder/*
 Content/App/version.txt
 Content/DuelAnalytics/AnalysisLogs
 Content/StarterContent/*
+Content/__ExternalActors__/*
+Content/__ExternalObjects__/*
 /Saved
 /Intermediate
 /Binaries

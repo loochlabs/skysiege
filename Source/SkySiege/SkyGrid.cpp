@@ -32,11 +32,9 @@ void ASkyGrid::CreateCell(int32 row, int32 col)
 	check(CellClass);
 	AGridCellActor* cell = GetWorld()->SpawnActor<AGridCellActor>(CellClass, GetActorTransform());
 	check(cell);
-	
 	checkf(!Cells.Contains(coord), TEXT("Coord [%d, %d]"), coord.Row, coord.Col);
 	Cells.Add(coord, cell);
-	
-	cell->Setup(row, col);
+	cell->Setup(this, row, col);
 	CreateCellBP(cell);
 }
 
@@ -104,13 +102,17 @@ void ASkyGrid::SetFocus(int32 Row, int32 Col)
 {
 	Focus.Row = Row;
 	Focus.Col = Col;
+	ClearAllHighlights();
+	AGridCellActor* cell = GetCell(Row, Col);
+	check(cell);
+	OnFocused.Broadcast(cell);
 }
 
 void ASkyGrid::ClearAllHighlights()
 {
 	for(auto& cellPair : Cells)
 	{
-		cellPair.Value->EndHighlight();
+		cellPair.Value->EndFocus();
 	}
 }
 
@@ -120,7 +122,7 @@ void ASkyGrid::RefreshHighlights()
 	for(auto& cellPair : Cells)
 	{
 		if(cellPair.Key == Focus)
-			cellPair.Value->BeginHighlight();
+			cellPair.Value->BeginFocus();
 	}
 }
 

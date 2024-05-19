@@ -10,6 +10,8 @@
 
 class UUserProfile;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkyUpdatedPhaseDelegate, ESessionPhase, Phase);
+
 
 UCLASS()
 class SKYSIEGE_API ASkyGameMode : public AGameModeBase
@@ -23,6 +25,7 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintPure)
 	const FUnitTemplate& GetUnitTemplate(const FName& UnitKey);
 
 	void StartGame();
@@ -34,10 +37,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FSessionConfig Config;
-
-	//@CLEAN
-	//UFUNCTION(BlueprintPure)
-	//static USessionProfile* GetUserProfile(UObject* WorldContext);
 	
 	UPROPERTY(BlueprintReadOnly)
 	UUserProfile* UserProfile = nullptr;
@@ -48,8 +47,6 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	ESessionPhase Phase = ESessionPhase::None;	
 
-	//@CLEAN
-	// delegates
-	//UPROPERTY(BlueprintAssignable)
-	//FSessionUpdatedPhaseDelegate OnUpdatedPhase;
+	UPROPERTY(BlueprintAssignable)
+	FSkyUpdatedPhaseDelegate OnUpdatedPhase;
 };

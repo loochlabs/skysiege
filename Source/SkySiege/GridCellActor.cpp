@@ -3,17 +3,18 @@
 
 #include "GridCellActor.h"
 #include "GridUnitActor.h"
-#include "SkyGameInstance.h"
-//#include "SessionProfile.h" @CLEAN
 #include "UnitTemplate.h"
 #include "CellHighlights.h"
+#include "SkyGrid.h"
 
-void AGridCellActor::Setup(int32 row, int32 col)
+void AGridCellActor::Setup(ASkyGrid* ParentGrid, int32 InRow, int32 InCol)
 {
+	check(ParentGrid);
 	check(Row == -1);
 	check(Col == -1);
-	Row = row;
-	Col = col;
+	Grid = ParentGrid;
+	Row = InRow;
+	Col = InCol;
 	check(UnitActors.IsEmpty());
 	UnitActors.Empty();
 }
@@ -47,10 +48,6 @@ void AGridCellActor::BeginCleanup()
 
 void AGridCellActor::Cleanup()
 {
-	//@TODO do we need this?
-	//if(UnitActor)
-	//	UnitActor->Destroy();
-
 	Destroy();
 }
 
@@ -78,14 +75,12 @@ bool AGridCellActor::HasUnitTags(const FGameplayTagContainer& InTags)
 	return bHasTags;
 }
 
-void AGridCellActor::BeginHighlight()
+void AGridCellActor::BeginFocus()
 {
-	//@CLEAN
-	//USessionProfile* user = USessionManager::GetUserProfile(this);
-	//user->BeginCellHighlight(Row, Col);
+	Grid->SetFocus(Row, Col);
 }
 
-void AGridCellActor::EndHighlight()
+void AGridCellActor::EndFocus()
 {
 	Highlight = ECellHighlight::None;
 	EndHighlightBP();
@@ -95,7 +90,7 @@ void AGridCellActor::RefreshHighlight()
 {
 	if(Highlight == ECellHighlight::None) return;
 
-	BeginHighlight();
+	BeginFocus();
 }
 
 void AGridCellActor::SetHighlight(ECellHighlight InHighlight)

@@ -29,6 +29,7 @@ void UUserProfile::Setup(const FUserProfileConfig& InConfig)
 	Grid->SetActorLocation(InConfig.GridLocation);
 	Grid->SetActorRotation(InConfig.GridRotation);
 	Grid->Cleanup();
+	Grid->OnFocused.AddDynamic(this, &UUserProfile::HandleGridFocused);
 
 	// hard coding grid spawning
 	for(int32 c = 0; c < InConfig.GridCols; ++c)
@@ -92,7 +93,7 @@ void UUserProfile::StartPhase(ESessionPhase Phase)
 void UUserProfile::UpdateWallet(int32 Amount)
 {
 	Wallet += Amount;
-	// OnUpdatedWallet.Broadcast(); @CLEAN delegates
+	OnUpdatedWallet.Broadcast();
 }
 
 void UUserProfile::ResetShopOptions()
@@ -169,8 +170,7 @@ void UUserProfile::ResetShopOptions()
 	}
 	check(CurrentShopOptions.Num() == NumOfShopOptions);
 
-	//@TODO delegates
-	//OnUpdatedShop.Broadcast();
+	OnUpdatedShop.Broadcast();
 }
 
 
@@ -185,19 +185,6 @@ bool UUserProfile::CanRerollShop()
 {
 	return Wallet >= GetConfig().ShopRerollCost;
 }
-
-//@CLEAN
-//
-// const FShopPool& UUserProfile::GetShopPool(int32 Level)
-// {
-// 	GetConfig();
-// 	//return rules->ShopPools[0]; //@TODO temp until we have proper pools
-// }
-//
-// const FShopPool& USessionProfile::GetCurrentShopPool()
-// {
-// 	return GetShopPool(CurrentLevel);
-// }
 
 void UUserProfile::AddUnitToInventory(const FName& UnitKey)
 {
@@ -224,8 +211,7 @@ void UUserProfile::AddUnitToInventory(const FName& UnitKey)
 		InventoryUnits.Add(invUnit);
 	}
 	
-	//@CLEAN delegate
-	//Session->OnUpdatedUnitInventory.Broadcast();
+	OnUpdatedUnitInventory.Broadcast();
 }
 
 void UUserProfile::RemoveUnitFromInventory(const FName& UnitKey)
@@ -240,8 +226,7 @@ void UUserProfile::RemoveUnitFromInventory(const FName& UnitKey)
 			if(InventoryUnits[idx].Count <= 0)
 				InventoryUnits.RemoveAt(idx);
 
-			//@CLEAN delegates
-			//Session->OnUpdatedUnitInventory.Broadcast();
+			OnUpdatedUnitInventory.Broadcast();
 			return;
 		}
 	}
@@ -311,8 +296,7 @@ bool UUserProfile::StartTransaction(int32 index)
 	ActiveTransaction.InvIndex = index;
 	FName unitKey = GetTransactionUnitKey();
 	ActiveTransaction.UnitActor = CreateUnit(unitKey);
-	
-	//Session->TransactionStartDelegate.Broadcast(); @CLEAN delegates
+	OnUpdatedTransaction.Broadcast();
 	return true;
 }
 
@@ -322,8 +306,7 @@ void UUserProfile::TransactionRotate(bool bRotateCW)
 	
 	ActiveTransaction.UnitActor->Rotate();
 	Grid->RefreshHighlights();
-	
-	//OnTransactionRotated.Broadcast(); @TODO broadcast update
+	OnUpdatedTransaction.Broadcast();
 }
 
 void UUserProfile::EndTransaction()
@@ -335,7 +318,7 @@ void UUserProfile::EndTransaction()
 	ActiveTransaction.UnitActor->Destroy();
 	ActiveTransaction.Reset();
 	Grid->RefreshHighlights();
-	// Session->TransactionClearDelegate.Broadcast(); @CLEAN
+	OnUpdatedTransaction.Broadcast();
 }
 
 bool UUserProfile::ConfirmTransaction(int32 Row, int32 Col)
@@ -352,7 +335,7 @@ bool UUserProfile::ConfirmTransaction(int32 Row, int32 Col)
 	ActiveTransaction.Reset();
 	Grid->RefreshHighlights();
 
-	//Session->TransactionConfirmDelegate.Broadcast(); @CLEAN
+	OnUpdatedTransaction.Broadcast();
 	return true;
 }
 
@@ -362,17 +345,12 @@ AGridUnitActor* UUserProfile::CreateUnit(const FName& InUnitKey)
 	FTransform transform;
 	AGridUnitActor* unit = GetWorld()->SpawnActor<AGridUnitActor>(unitTemplate.UnitClass, transform);
 	unit->Setup(InUnitKey);
-	///Session->UnitCreatedDelegate.Broadcast(); @CLEAN delegates
+	OnUnitCreated.Broadcast();
 	return unit;
 }
 
 bool UUserProfile::PlaceUnit(const FName& UnitKey, int32 Row, int32 Col)
 {
-	//@CLEAN
-	//FUnitTemplate unitTemplate;
-	//unitTemplate.UnitKey = UnitKey;
-	//auto& unitBP = Session->GetUnitBlueprint(UnitKey);
-	//unitTemplate.UnitClass = unitBP.BlueprintClass;
 	AGridUnitActor* unitActor = CreateUnit(UnitKey);
 	return PlaceUnit(unitActor, Row, Col);
 }
@@ -392,7 +370,6 @@ void UUserProfile::ClearUnit(AGridUnitActor* Unit)
 	AddUnitToInventory(Unit->UnitKey);
 
 	//remove buffs
-	//auto& unitBP = Session->GetUnitBlueprint(Unit->UnitKey); @CLEAN
 	auto& unitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(Unit->UnitKey);
 	for(auto& bonusCfg : unitTemplate.BonusConfig)
 	{
@@ -455,24 +432,24 @@ bool UUserProfile::IsTransactionActive()
 	return ActiveTransaction.InvIndex != -1;
 }
 
-void UUserProfile::BeginCellHighlight(int32 Row, int32 Col)
+void UUserProfile::HandleGridFocused(AGridCellActor* Cell)
+//void UUserProfile::BeginCellHighlight(int32 Row, int32 Col) @CLEAN
 {
-	Grid->ClearAllHighlights();
-	Grid->SetFocus(Row, Col);
-	
-	AGridCellActor* cell = Grid->GetCell(Row, Col);
+	//Grid->ClearAllHighlights();
+	//Grid->SetFocus(Row, Col);
+	//AGridCellActor* cell = Grid->GetCell(Row, Col);
 	
 	//get current transaction shape
 	//set highlight for each cell in shape to our result
 	if(IsTransactionActive())
 	{
-		ActiveTransaction.UnitActor->SetOriginCell(cell);
+		ActiveTransaction.UnitActor->SetOriginCell(Cell);
 		
 		//check each cell for valid tags
 		auto& unitBP = GetTransactionUnitTemplate();
 		auto coords = ActiveTransaction.UnitActor->GetOrientedCoords(unitBP.GridShape);
 		TArray<AGridCellActor*> cells;
-		Grid->GetCellShape(cells, Row, Col, coords);
+		Grid->GetCellShape(cells, Cell->Row, Cell->Col, coords);
 		
 		for(auto& c : cells)
 		{
@@ -482,6 +459,6 @@ void UUserProfile::BeginCellHighlight(int32 Row, int32 Col)
 	}
 	else
 	{
-		cell->SetHighlight(ECellHighlight::Basic);
+		Cell->SetHighlight(ECellHighlight::Basic);
 	}
 }

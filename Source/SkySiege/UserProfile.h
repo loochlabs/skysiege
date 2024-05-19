@@ -7,12 +7,20 @@
 #include "UserProfile.generated.h"
 
 
+class AGridCellActor;
 struct FSessionConfig;
 class ASkyGrid;
 class AGridUnitActor;
 struct FUnitTemplate;
 struct FShopPool;
 enum class ESessionPhase : uint8;
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedShopDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedWalletDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedUnitInventoryDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileTransactionDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUnitCreatedDelegate);
 
 
 USTRUCT(BlueprintType)
@@ -117,11 +125,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RerollShop();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	bool CanRerollShop();
-
-	const FShopPool& GetShopPool(int32 Level);
-	const FShopPool& GetCurrentShopPool();
 
 	UFUNCTION(BlueprintCallable)
 	void AddUnitToInventory(const FName& UnitKey);
@@ -156,14 +161,16 @@ public:
 	const FName& GetUnitKeyFromInventory(int32 InventoryIndex);
 	const FName& GetTransactionUnitKey();
 	const FUnitTemplate& GetTransactionUnitTemplate();
+
+	UFUNCTION(BlueprintPure)
 	bool IsTransactionActive();
 
-	void BeginCellHighlight(int32 Row, int32 Col);
-
 	//@CLEAN
-	//UPROPERTY(BlueprintReadOnly)
-	//USessionManager* Session = nullptr;
+	//void BeginCellHighlight(int32 Row, int32 Col);
 
+	UFUNCTION()
+	void HandleGridFocused(AGridCellActor* Cell);
+	
 	UPROPERTY(BlueprintReadOnly)
 	int32 CurrentWins = 0;
 	
@@ -193,10 +200,18 @@ public:
 
 	int32 CellUnitSelection = 0;
 
-	//@CLEAN delegates
-	//UPROPERTY(BlueprintAssignable)
-	//FProfileUpdatedShopDelegate OnUpdatedShop;
-	//
-	//UPROPERTY(BlueprintAssignable)
-	//FProfileUpdatedWalletDelegate OnUpdatedWallet;
+	UPROPERTY(BlueprintAssignable)
+	FProfileUpdatedShopDelegate OnUpdatedShop;
+	
+	UPROPERTY(BlueprintAssignable)
+	FProfileUpdatedWalletDelegate OnUpdatedWallet;
+	
+	UPROPERTY(BlueprintAssignable)
+	FProfileUpdatedUnitInventoryDelegate OnUpdatedUnitInventory;
+
+	UPROPERTY(BlueprintAssignable)
+	FProfileTransactionDelegate OnUpdatedTransaction;
+
+	UPROPERTY(BlueprintAssignable)
+	FProfileUnitCreatedDelegate OnUnitCreated;
 };

@@ -11,6 +11,8 @@ class AGridUnitActor;
 class AGridCellActor;
 struct FCoordinates;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGridFocusedDelegate, AGridCellActor*, Cell);
+
 UCLASS()
 class SKYSIEGE_API ASkyGrid : public AActor
 {
@@ -63,8 +65,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGridCellActor> CellClass; 
 	
-	UPROPERTY(SaveGame, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	TMap<FCoordinates, AGridCellActor*> Cells;
 
 	FCoordinates Focus;
+
+	UPROPERTY(BlueprintAssignable)
+	FGridFocusedDelegate OnFocused;
 };

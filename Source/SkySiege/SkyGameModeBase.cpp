@@ -65,7 +65,7 @@ void ASkyGameMode::StartPhase(ESessionPhase InPhase)
 {
 	Phase = InPhase;
 	UserProfile->StartPhase(InPhase);
-	//OnUpdatedPhase.Broadcast(InPhase); @CLEAN delegates
+	OnUpdatedPhase.Broadcast(InPhase);
 
 	switch(InPhase)
 	{
