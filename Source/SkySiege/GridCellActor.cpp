@@ -101,9 +101,7 @@ void AGridCellActor::SetHighlight(ECellHighlight InHighlight)
 
 void AGridCellActor::Interact()
 {
-	//@CLEAN
-	//USessionProfile* user = USessionManager::GetUserProfile(this);
-	//user->TryToInteract(Row,Col);
+	Grid->Interact(Row, Col);
 }
 
 void AGridCellActor::InsertUnit(AGridUnitActor* Unit)

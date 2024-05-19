@@ -56,6 +56,7 @@ public:
 	bool GetRandomEmptyCell(int32& row, int32& col);
 
 	void SetFocus(int32 Row, int32 Col);
+	void Interact(int32 Row, int32 Col);
 	void ClearAllHighlights();
 	void RefreshHighlights();
 
@@ -72,4 +73,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FGridFocusedDelegate OnFocused;
+
+	UPROPERTY(BlueprintAssignable)
+	FGridFocusedDelegate OnInteract;
 };

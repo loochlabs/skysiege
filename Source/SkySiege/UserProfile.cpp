@@ -30,6 +30,7 @@ void UUserProfile::Setup(const FUserProfileConfig& InConfig)
 	Grid->SetActorRotation(InConfig.GridRotation);
 	Grid->Cleanup();
 	Grid->OnFocused.AddDynamic(this, &UUserProfile::HandleGridFocused);
+	Grid->OnInteract.AddDynamic(this, &UUserProfile::HandleGridInteract);
 
 	// hard coding grid spawning
 	for(int32 c = 0; c < InConfig.GridCols; ++c)
@@ -252,40 +253,6 @@ void UUserProfile::ConfirmShopPurchase(int32 OptionIndex)
 	UpdateWallet(-unitTemplate.ShopCost);
 }
 
-void UUserProfile::TryToInteract(int32 Row, int32 Col)
-{
-	if(IsTransactionActive())
-	{
-		ConfirmTransaction(Row, Col);
-	}
-	else
-	{
-		// clear units
-		AGridCellActor* cell = Grid->GetCell(Row, Col);
-		if(cell->UnitActors.Num() > 0)
-		{
-			AGridUnitActor* unit = cell->UnitActors[CellUnitSelection];
-			FName unitKey = unit->UnitKey;
-			ClearUnit(unit);
-
-			//restart the transaction with the unit we just removed
-			int32 inventoryIdx = 0;
-			for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
-			{
-				if(InventoryUnits[idx].UnitKey == unitKey)
-				{
-					inventoryIdx = idx;
-					break;
-				}
-			}
-			StartTransaction(inventoryIdx);
-
-			Grid->RefreshUnitBonuses();
-			cell->RefreshHighlight();
-		}
-	}
-}
-
 bool UUserProfile::StartTransaction(int32 index)
 {
 	if(index < 0 || index >= InventoryUnits.Num())
@@ -328,7 +295,6 @@ bool UUserProfile::ConfirmTransaction(int32 Row, int32 Col)
 	
 	if(!PlaceUnit(ActiveTransaction.UnitActor, Row, Col))
 		return false;
-
 	
 	RemoveUnitFromInventory(ActiveTransaction.UnitActor->UnitKey);
 
@@ -433,14 +399,8 @@ bool UUserProfile::IsTransactionActive()
 }
 
 void UUserProfile::HandleGridFocused(AGridCellActor* Cell)
-//void UUserProfile::BeginCellHighlight(int32 Row, int32 Col) @CLEAN
 {
-	//Grid->ClearAllHighlights();
-	//Grid->SetFocus(Row, Col);
-	//AGridCellActor* cell = Grid->GetCell(Row, Col);
-	
-	//get current transaction shape
-	//set highlight for each cell in shape to our result
+	//get current transaction shape, set highlight for each cell in shape to our result
 	if(IsTransactionActive())
 	{
 		ActiveTransaction.UnitActor->SetOriginCell(Cell);
@@ -460,5 +420,38 @@ void UUserProfile::HandleGridFocused(AGridCellActor* Cell)
 	else
 	{
 		Cell->SetHighlight(ECellHighlight::Basic);
+	}
+}
+
+void UUserProfile::HandleGridInteract(AGridCellActor* Cell)
+{
+	if(IsTransactionActive())
+	{
+		ConfirmTransaction(Cell->Row, Cell->Col);
+	}
+	else
+	{
+		// clear units
+		if(Cell->UnitActors.Num() > 0)
+		{
+			AGridUnitActor* unit = Cell->UnitActors[CellUnitSelection];
+			FName unitKey = unit->UnitKey;
+			ClearUnit(unit);
+
+			//restart the transaction with the unit we just removed
+			int32 inventoryIdx = 0;
+			for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
+			{
+				if(InventoryUnits[idx].UnitKey == unitKey)
+				{
+					inventoryIdx = idx;
+					break;
+				}
+			}
+			StartTransaction(inventoryIdx);
+
+			Grid->RefreshUnitBonuses();
+			Cell->RefreshHighlight();
+		}
 	}
 }

@@ -108,6 +108,13 @@ void ASkyGrid::SetFocus(int32 Row, int32 Col)
 	OnFocused.Broadcast(cell);
 }
 
+void ASkyGrid::Interact(int32 Row, int32 Col)
+{
+	AGridCellActor* cell = GetCell(Row, Col);
+	check(cell);
+	OnInteract.Broadcast(cell);
+}
+
 void ASkyGrid::ClearAllHighlights()
 {
 	for(auto& cellPair : Cells)

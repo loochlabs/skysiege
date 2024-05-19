@@ -167,6 +167,9 @@ public:
 
 	UFUNCTION()
 	void HandleGridFocused(AGridCellActor* Cell);
+
+	UFUNCTION()
+	void HandleGridInteract(AGridCellActor* Cell);
 	
 	UPROPERTY(BlueprintReadOnly)
 	int32 CurrentWins = 0;
