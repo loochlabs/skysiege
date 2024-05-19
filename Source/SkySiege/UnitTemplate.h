@@ -35,7 +35,7 @@ struct FUnitTemplate
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AGridUnitActor> UnitBlueprint;
+	TSubclassOf<AGridUnitActor> UnitClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
 	int32 ShopCost = 1;

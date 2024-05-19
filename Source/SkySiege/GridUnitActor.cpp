@@ -32,8 +32,7 @@ void AGridUnitActor::BeginDestroy()
 
 const FUnitTemplate& AGridUnitActor::GetTemplate()
 {
-	ASkyGameMode* gamemode = Cast<ASkyGameMode>(UGameplayStatics::GetGameMode(this));
-	return gamemode->GetUnitTemplate(UnitKey);
+	return ASkyGameMode::Get(this)->GetUnitTemplate(UnitKey);
 	
 	//@CLEAN
 	//UMineshaftGameInstance* gi = GetWorld()->GetGameInstance<UMineshaftGameInstance>();

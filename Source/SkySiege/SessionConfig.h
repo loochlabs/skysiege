@@ -26,6 +26,8 @@ struct FSessionConfig
 {
 	GENERATED_BODY()
 
+	void Setup(); //@TODO unit template setup
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
 	TSubclassOf<ASkyGrid> GridClass = nullptr;
 	
