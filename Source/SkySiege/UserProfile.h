@@ -32,6 +32,9 @@ struct FShopOption
 	FName UnitKey;
 
 	UPROPERTY(BlueprintReadWrite)
+	int32 Cost = 0;
+
+	UPROPERTY(BlueprintReadWrite)
 	bool Purchased = false;
 };
 

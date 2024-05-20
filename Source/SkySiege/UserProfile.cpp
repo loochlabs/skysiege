@@ -113,6 +113,7 @@ void UUserProfile::ResetShopOptions()
 	{
 		FName Key;
 		float Weight = 1.f;
+		int32 Cost = 0;
 	};
 	TArray<ShopPoolItem> shopPool;
 	
@@ -124,6 +125,7 @@ void UUserProfile::ResetShopOptions()
 			ShopPoolItem item;
 			item.Key = unitPair.Key;
 			item.Weight = unitPair.Value.ShopWeight;
+			item.Cost = unitPair.Value.ShopCost;
 			shopPool.Add(item);
 			weightTotal += item.Weight;
 		}
@@ -151,6 +153,7 @@ void UUserProfile::ResetShopOptions()
 			{
 				FShopOption option;
 				option.UnitKey = item.Key;
+				option.Cost = item.Cost; 
 				CurrentShopOptions.Add(option);
 				break;
 			}
@@ -229,9 +232,7 @@ void UUserProfile::RemoveUnitFromInventory(const FName& UnitKey)
 
 bool UUserProfile::CanAfford(int32 OptionIndex)
 {
-	FName unitKey = CurrentShopOptions[OptionIndex].UnitKey;
-	const FUnitTemplate& unitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(unitKey);
-	return Wallet >= unitTemplate.ShopCost;
+	return Wallet >= CurrentShopOptions[OptionIndex].Cost;
 }
 
 void UUserProfile::ConfirmShopPurchase(int32 OptionIndex)
@@ -239,12 +240,10 @@ void UUserProfile::ConfirmShopPurchase(int32 OptionIndex)
 	check(CurrentShopOptions.Num() > 0);
 	check(OptionIndex >= 0 && OptionIndex < CurrentShopOptions.Num());
 	check(!CurrentShopOptions[OptionIndex].Purchased);
+	
 	CurrentShopOptions[OptionIndex].Purchased = true;
 	AddUnitToInventory(CurrentShopOptions[OptionIndex].UnitKey);
-
-	FName unitKey = CurrentShopOptions[OptionIndex].UnitKey;
-	const FUnitTemplate& unitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(unitKey);
-	UpdateWallet(-unitTemplate.ShopCost);
+	UpdateWallet(-CurrentShopOptions[OptionIndex].Cost);
 }
 
 bool UUserProfile::StartTransaction(int32 index)
