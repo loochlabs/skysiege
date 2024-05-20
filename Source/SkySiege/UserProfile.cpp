@@ -100,17 +100,11 @@ void UUserProfile::UpdateWallet(int32 Amount)
 void UUserProfile::ResetShopOptions()
 {
 	// accumulate all pool tags up to CurrentLevel
-	static TArray<FName> shopPoolKeys =
-	{
-		"Shop.Pool.Level_0",
-		"Shop.Pool.Level_1",
-		"Shop.Pool.Level_2",
-	};
+	auto& cfg = GetConfig();
 	FGameplayTagContainer shopPoolTags;
-	for(int32 lvl = 0; lvl <= FMath::Min(CurrentLevel, shopPoolKeys.Num()-1); ++lvl)
+	for(int32 lvl = 0; lvl <= FMath::Min(CurrentLevel, cfg.ShopPoolTags.Num()-1); ++lvl)
 	{
-		FName poolTag = shopPoolKeys[lvl];
-		FGameplayTag tag = FGameplayTag::RequestGameplayTag(poolTag);
+		FGameplayTag tag = cfg.ShopPoolTags[lvl];
 		shopPoolTags.AddTag(tag);
 	}
 
@@ -123,7 +117,7 @@ void UUserProfile::ResetShopOptions()
 	TArray<ShopPoolItem> shopPool;
 	
 	float weightTotal = 0.f;
-	for(auto& unitPair : GetConfig().UnitTemplates)
+	for(auto& unitPair : cfg.UnitTemplates)
 	{
 		if(unitPair.Value.UnitTags.HasAny(shopPoolTags))
 		{

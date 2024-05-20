@@ -6,19 +6,9 @@
 #include "SessionConfig.generated.h"
 
 
-
+struct FGameplayTag;
 struct FUnitTemplate;
 class ASkyGrid;
-
-
-USTRUCT(BlueprintType)
-struct FShopPool
-{
-	GENERATED_BODY();
-
-	UPROPERTY(EditAnywhere)
-	TArray<FName> UnitKeys;
-};
 
 
 USTRUCT(BlueprintType)
@@ -47,12 +37,9 @@ struct FSessionConfig
 	int32 StartingWalletAmount = 10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Rules")
-	TMap<FName, int32> StartingInventory;
-
-	UPROPERTY(BlueprintReadWrite, Category="Rules")
 	int32 ShopRerollCost = 1;
 
-	UPROPERTY(BlueprintReadWrite, Category="Rules")
-	TArray<FShopPool> ShopPools;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Rules")
+	TArray<FGameplayTag> ShopPoolTags;
 };
 
