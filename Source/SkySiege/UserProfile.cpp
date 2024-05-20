@@ -260,10 +260,21 @@ bool UUserProfile::StartTransaction(int32 index)
 	return true;
 }
 
+void UUserProfile::TryToCycle(bool CW)
+{
+	if(IsTransactionActive())
+	{
+		TransactionRotate(CW);
+	}
+	else
+	{
+		Grid->CycleFocus();
+	}
+}
+
 void UUserProfile::TransactionRotate(bool bRotateCW)
 {
-	if(!IsTransactionActive()) return;
-	
+	check(IsTransactionActive());
 	ActiveTransaction.UnitActor->Rotate();
 	Grid->RefreshHighlights();
 	OnUpdatedTransaction.Broadcast();
@@ -427,7 +438,8 @@ void UUserProfile::HandleGridInteract(AGridCellActor* Cell)
 		// clear units
 		if(Cell->UnitActors.Num() > 0)
 		{
-			AGridUnitActor* unit = Cell->UnitActors[CellUnitSelection];
+			int32 focusIdx = Grid->FocusIndex % Cell->UnitActors.Num();
+			AGridUnitActor* unit = Cell->UnitActors[focusIdx];
 			FName unitKey = unit->UnitKey;
 			ClearUnit(unit);
 

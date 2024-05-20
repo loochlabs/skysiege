@@ -143,10 +143,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ConfirmShopPurchase(int32 OptionIndex);
 
-	void TryToInteract(int32 Row, int32 Col);
-	
 	UFUNCTION(BlueprintCallable)
 	bool StartTransaction(int32 index);
+
+	UFUNCTION(BlueprintCallable)
+	void TryToCycle(bool CW);
 	
 	UFUNCTION(BlueprintCallable)
 	void TransactionRotate(bool bRotateCW);
@@ -201,7 +202,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	FTransactionData ActiveTransaction;
 
-	int32 CellUnitSelection = 0;
+	//@CLEAN
+	//int32 CellUnitSelection = 0;
 
 	UPROPERTY(BlueprintAssignable)
 	FProfileUpdatedShopDelegate OnUpdatedShop;

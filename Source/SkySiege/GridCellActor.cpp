@@ -80,6 +80,17 @@ void AGridCellActor::BeginFocus()
 	Grid->SetFocus(Row, Col);
 }
 
+int32 AGridCellActor::GetUnitFocusIndex()
+{
+	return Grid->FocusIndex > 0 && !UnitActors.IsEmpty() ? Grid->FocusIndex % UnitActors.Num() : 0;
+}
+
+void AGridCellActor::FocusUnit()
+{
+	int32 unitIdx = GetUnitFocusIndex();
+	BeginHighlightBP(unitIdx);
+}
+
 void AGridCellActor::EndFocus()
 {
 	Highlight = ECellHighlight::None;
@@ -96,7 +107,8 @@ void AGridCellActor::RefreshHighlight()
 void AGridCellActor::SetHighlight(ECellHighlight InHighlight)
 {
 	Highlight = InHighlight;
-	BeginHighlightBP();
+	int32 unitIdx = GetUnitFocusIndex();
+	BeginHighlightBP(unitIdx);
 }
 
 void AGridCellActor::Interact()

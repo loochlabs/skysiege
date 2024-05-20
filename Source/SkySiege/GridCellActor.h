@@ -45,9 +45,12 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void BeginFocus();
+
+	int32 GetUnitFocusIndex();
+	void FocusUnit();
 	
 	UFUNCTION(BlueprintImplementableEvent)
-	void BeginHighlightBP();
+	void BeginHighlightBP(int32 FocusIndex);
 	
 	UFUNCTION(BlueprintCallable)
 	void EndFocus();

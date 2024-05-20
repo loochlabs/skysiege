@@ -56,6 +56,7 @@ public:
 	bool GetRandomEmptyCell(int32& row, int32& col);
 
 	void SetFocus(int32 Row, int32 Col);
+	void CycleFocus();
 	void Interact(int32 Row, int32 Col);
 	void ClearAllHighlights();
 	void RefreshHighlights();
@@ -63,6 +64,7 @@ public:
 	bool PlaceUnit(AGridUnitActor* Unit, int32 Row, int32 Col);
 	void RefreshUnitBonuses();
 
+	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGridCellActor> CellClass; 
 	
@@ -70,6 +72,7 @@ public:
 	TMap<FCoordinates, AGridCellActor*> Cells;
 
 	FCoordinates Focus;
+	int32 FocusIndex = 0;
 
 	UPROPERTY(BlueprintAssignable)
 	FGridFocusedDelegate OnFocused;

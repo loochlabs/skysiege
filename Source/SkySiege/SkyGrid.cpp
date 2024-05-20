@@ -105,7 +105,16 @@ void ASkyGrid::SetFocus(int32 Row, int32 Col)
 	ClearAllHighlights();
 	AGridCellActor* cell = GetCell(Row, Col);
 	check(cell);
+	cell->FocusUnit();
+
 	OnFocused.Broadcast(cell);
+}
+
+void ASkyGrid::CycleFocus()
+{
+	FocusIndex++;
+	AGridCellActor* cell = GetCell(Focus.Row, Focus.Col);
+	cell->FocusUnit();
 }
 
 void ASkyGrid::Interact(int32 Row, int32 Col)
