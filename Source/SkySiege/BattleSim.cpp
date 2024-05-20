@@ -16,6 +16,10 @@ void FBattleUnit::Start(FBattleSimulation& Sim)
 	{
 		Bonus_AddPower(Sim);
 	}
+	if(Tags.HasTag(Sim.UnitTag_Bonus_Strong))
+	{
+		Bonus_AddPower(Sim);
+	}
 	
 	// Start Actions
 	if(Tags.HasTag(Sim.UnitTag_StartAction_AddMaxHP_1000))
@@ -56,15 +60,15 @@ EBattleUnitStepResult FBattleUnit::Step(FBattleSimulation& Sim)
 	// actions
 	if(FMath::FRand() < Stats.Competence)
 	{
-		if(Tags.HasTag(Sim.UnitTag_Action_DamageEnemy))
+		if(Tags.HasTag(Sim.UnitTag_Job_Soldier))
 		{
 			Action_DamageEnemy(Sim);
 		}
-		if(Tags.HasTag(Sim.UnitTag_Action_AddFood))
+		if(Tags.HasTag(Sim.UnitTag_Job_Farmer))
 		{
 			Action_AddFood(Sim);
 		}
-		if(Tags.HasTag(Sim.UnitTag_Action_AddHP))
+		if(Tags.HasTag(Sim.UnitTag_Job_Engineer))
 		{
 			Action_AddHP(Sim);
 		}
@@ -78,7 +82,7 @@ EBattleUnitStepResult FBattleUnit::Step(FBattleSimulation& Sim)
 
 void FBattleUnit::Bonus_AddPower(FBattleSimulation& Sim)
 {
-	Stats.Power += 100;
+	Stats.Power += 50;
 }
 
 void FBattleUnit::StartAction_AddMaxHP_1000(FBattleSimulation& Sim)

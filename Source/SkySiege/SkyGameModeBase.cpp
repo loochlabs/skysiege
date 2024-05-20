@@ -50,7 +50,7 @@ void ASkyGameMode::StartGame()
 	
 	// starting units
 	profileCfg.AddStartingUnit("unit_land_basic", 2, 2);
-	profileCfg.AddStartingUnit("unit_human", 2, 2);
+	profileCfg.AddStartingUnit("unit_human_peon", 2, 2);
 	profileCfg.AddStartingUnit("unit_human_brute", 2, 3);
 	
 	UserProfile->Setup(profileCfg);
@@ -76,6 +76,21 @@ void ASkyGameMode::StartPhase(ESessionPhase InPhase)
 			EnemyProfile->Teardown();
 			EnemyProfile = nullptr;
 		}
+		
+	{
+		// check new day tags
+		FGameplayTag tagExercising = FGameplayTag::RequestGameplayTag("Unit.Status.Exercising");
+		FGameplayTag tagStrong = FGameplayTag::RequestGameplayTag("Unit.Bonus.Strong");
+		for(auto& cellPair : UserProfile->Grid->Cells)
+		{
+			for(auto& unit : cellPair.Value->UnitActors)
+			{
+				if(unit->UnitTags.HasTag(tagExercising))
+					unit->UnitTags.AddTag(tagStrong);
+			}
+		}
+	}
+		
 		break;
 	
 	case ESessionPhase::Battle:
@@ -143,7 +158,7 @@ void ASkyGameMode::StartBattleSim()
 	profileCfg.AddStartingUnit("unit_land_basic", 0, 2);
 	profileCfg.AddStartingUnit("unit_land_basic", 2, 2);
 	profileCfg.AddStartingUnit("unit_land_basic", 4, 2);
-	profileCfg.AddStartingUnit("unit_human", 2, 2);
+	profileCfg.AddStartingUnit("unit_human_peon", 2, 2);
 	profileCfg.AddStartingUnit("unit_human_brute", 2, 3);
 	EnemyProfile->Setup(profileCfg);
 	battle.UserB = create_profile(EBattleID::B, EnemyProfile);

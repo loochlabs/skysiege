@@ -33,11 +33,6 @@ void AGridUnitActor::BeginDestroy()
 const FUnitTemplate& AGridUnitActor::GetTemplate()
 {
 	return ASkyGameMode::Get(this)->GetUnitTemplate(UnitKey);
-	
-	//@CLEAN
-	//UMineshaftGameInstance* gi = GetWorld()->GetGameInstance<UMineshaftGameInstance>();
-	//USessionManager* sm = gi->SessionManager;
-	//return sm->GetUnitBlueprint(UnitKey);
 }
 
 void AGridUnitActor::SetOriginCell(AGridCellActor* Cell)

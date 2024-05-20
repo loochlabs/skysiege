@@ -208,18 +208,28 @@ struct FBattleSimulation
 		SetTag(UnitTag_StartAction_AddFood_25, "Unit.StartAction.AddFood_25");
 		
 		SetTag(UnitTag_Bonus_AddPower, "Unit.Bonus.AddPower");
+		SetTag(UnitTag_Bonus_Strong, "Unit.Bonus.Strong");
 
 		SetTag(UnitTag_Action_DamageEnemy, "Unit.Action.DamageEnemy");
 		SetTag(UnitTag_Action_AddFood, "Unit.Action.AddFood");
 		SetTag(UnitTag_Action_AddHP, "Unit.Action.AddHP");
+		
+		SetTag(UnitTag_Job_Farmer, "Unit.Job.Farmer");
+		SetTag(UnitTag_Job_Soldier, "Unit.Job.Soldier");
+		SetTag(UnitTag_Job_Engineer, "Unit.Job.Engineer");
 	}
 	
 	FGameplayTag UnitTag_StartAction_AddMaxHP_1000;
 	FGameplayTag UnitTag_StartAction_AddFood_25;
 	
 	FGameplayTag UnitTag_Bonus_AddPower;
+	FGameplayTag UnitTag_Bonus_Strong;
 	
 	FGameplayTag UnitTag_Action_DamageEnemy;
 	FGameplayTag UnitTag_Action_AddFood;
 	FGameplayTag UnitTag_Action_AddHP;
+	
+	FGameplayTag UnitTag_Job_Farmer;
+	FGameplayTag UnitTag_Job_Soldier;
+	FGameplayTag UnitTag_Job_Engineer;
 };
