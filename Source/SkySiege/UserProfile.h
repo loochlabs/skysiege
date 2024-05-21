@@ -19,7 +19,7 @@ enum class ESessionPhase : uint8;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedShopDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedWalletDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedUnitInventoryDelegate);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedUnitInventoryDelegate); @CLEAN
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileTransactionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUnitCreatedDelegate);
 
@@ -69,17 +69,18 @@ struct FUserProfileConfig
 };
 
 
-USTRUCT(BlueprintType)
-struct FInventoryUnit
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(BlueprintReadWrite)
-	FName UnitKey;
-
-	UPROPERTY(BlueprintReadWrite)
-	int32 Count = 0;
-};
+//@CLEAN
+// USTRUCT(BlueprintType)
+// struct FInventoryUnit
+// {
+// 	GENERATED_BODY()
+// 	
+// 	UPROPERTY(BlueprintReadWrite)
+// 	FName UnitKey;
+//
+// 	UPROPERTY(BlueprintReadWrite)
+// 	int32 Count = 0;
+// };
 
 enum class ETransactionState : uint8
 {
@@ -132,11 +133,12 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool CanRerollShop();
 
-	UFUNCTION(BlueprintCallable)
-	void AddUnitToInventory(const FName& UnitKey);
-
-	UFUNCTION(BlueprintCallable)
-	void RemoveUnitFromInventory(const FName& UnitKey);
+	//@CLEAN
+	//UFUNCTION(BlueprintCallable)
+	//void AddUnitToInventory(const FName& UnitKey);
+	//
+	//UFUNCTION(BlueprintCallable)
+	//void RemoveUnitFromInventory(const FName& UnitKey);
 
 	UFUNCTION(BlueprintPure)
 	bool CanAfford(int32 OptionIndex);
@@ -144,8 +146,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ConfirmShopPurchase(int32 OptionIndex);
 
-	UFUNCTION(BlueprintCallable)
-	bool StartTransaction(int32 index);
+	//@CLEAN
+	//UFUNCTION(BlueprintCallable)
+	//bool StartTransaction(int32 index);
 
 	UFUNCTION(BlueprintCallable)
 	void TryToCycle(bool CW);
@@ -162,10 +165,11 @@ public:
 	bool PlaceUnit(ASkyGrid* Grid, const FName& UnitKey, int32 Row, int32 Col);
 	bool PlaceUnit(ASkyGrid* Grid, AGridUnitActor* UnitActor, int32 Row, int32 Col);
 	void ClearUnit(ASkyGrid* Grid, AGridUnitActor* Unit);
-	
-	const FName& GetUnitKeyFromInventory(int32 InventoryIndex);
-	const FName& GetTransactionUnitKey();
-	const FUnitTemplate& GetTransactionUnitTemplate();
+
+	//@CLEAN
+	//const FName& GetUnitKeyFromInventory(int32 InventoryIndex);
+	//const FName& GetTransactionUnitKey();
+	//const FUnitTemplate& GetTransactionUnitTemplate();
 
 	UFUNCTION(BlueprintPure)
 	bool IsTransactionActive();
@@ -185,10 +189,6 @@ public:
 	UPROPERTY()
 	ASkyGrid* GridMain = nullptr;
 
-	//@TODO
-	//UPROPERTY()
-	//ASkyGrid* ShopGrid = nullptr;
-
 	UPROPERTY()
 	ASkyGrid* GridStorage = nullptr;
 
@@ -204,8 +204,9 @@ public:
 	UPROPERTY(SaveGame, BlueprintReadWrite)
 	TArray<FShopOption> CurrentShopOptions;
 
-	UPROPERTY(BlueprintReadWrite)
-	TArray<FInventoryUnit> InventoryUnits;
+	//@CLEAN
+	//UPROPERTY(BlueprintReadWrite)
+	//TArray<FInventoryUnit> InventoryUnits;
 
 	UPROPERTY(BlueprintReadWrite)
 	FTransactionData ActiveTransaction;
@@ -215,9 +216,10 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FProfileUpdatedWalletDelegate OnUpdatedWallet;
-	
-	UPROPERTY(BlueprintAssignable)
-	FProfileUpdatedUnitInventoryDelegate OnUpdatedUnitInventory;
+
+	//@CLEAN
+	//UPROPERTY(BlueprintAssignable)
+	//FProfileUpdatedUnitInventoryDelegate OnUpdatedUnitInventory;
 
 	UPROPERTY(BlueprintAssignable)
 	FProfileTransactionDelegate OnUpdatedTransaction;

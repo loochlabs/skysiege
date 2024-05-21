@@ -176,51 +176,51 @@ bool UUserProfile::CanRerollShop()
 	return Wallet >= GetConfig().ShopRerollCost;
 }
 
-void UUserProfile::AddUnitToInventory(const FName& UnitKey)
-{
-	int32 foundIdx = -1;
-	for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
-	{
-		if(InventoryUnits[idx].UnitKey == UnitKey)
-		{
-			check(InventoryUnits[idx].Count > 0);
-			foundIdx = idx;
-			break;
-		}
-	}
-	
-	if(foundIdx >= 0)
-	{
-		InventoryUnits[foundIdx].Count++;
-	}
-	else
-	{
-		FInventoryUnit invUnit;
-		invUnit.UnitKey = UnitKey;
-		invUnit.Count = 1;
-		InventoryUnits.Add(invUnit);
-	}
-	
-	OnUpdatedUnitInventory.Broadcast();
-}
-
-void UUserProfile::RemoveUnitFromInventory(const FName& UnitKey)
-{
-	for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
-	{
-		if(InventoryUnits[idx].UnitKey == UnitKey)
-		{
-			check(InventoryUnits[idx].Count > 0);
-			InventoryUnits[idx].Count--;
-
-			if(InventoryUnits[idx].Count <= 0)
-				InventoryUnits.RemoveAt(idx);
-
-			OnUpdatedUnitInventory.Broadcast();
-			return;
-		}
-	}
-}
+// void UUserProfile::AddUnitToInventory(const FName& UnitKey)
+// {
+// 	int32 foundIdx = -1;
+// 	for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
+// 	{
+// 		if(InventoryUnits[idx].UnitKey == UnitKey)
+// 		{
+// 			check(InventoryUnits[idx].Count > 0);
+// 			foundIdx = idx;
+// 			break;
+// 		}
+// 	}
+// 	
+// 	if(foundIdx >= 0)
+// 	{
+// 		InventoryUnits[foundIdx].Count++;
+// 	}
+// 	else
+// 	{
+// 		FInventoryUnit invUnit;
+// 		invUnit.UnitKey = UnitKey;
+// 		invUnit.Count = 1;
+// 		InventoryUnits.Add(invUnit);
+// 	}
+// 	
+// 	OnUpdatedUnitInventory.Broadcast();
+// }
+//
+// void UUserProfile::RemoveUnitFromInventory(const FName& UnitKey)
+// {
+// 	for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
+// 	{
+// 		if(InventoryUnits[idx].UnitKey == UnitKey)
+// 		{
+// 			check(InventoryUnits[idx].Count > 0);
+// 			InventoryUnits[idx].Count--;
+//
+// 			if(InventoryUnits[idx].Count <= 0)
+// 				InventoryUnits.RemoveAt(idx);
+//
+// 			OnUpdatedUnitInventory.Broadcast();
+// 			return;
+// 		}
+// 	}
+// }
 
 bool UUserProfile::CanAfford(int32 OptionIndex)
 {
@@ -234,23 +234,24 @@ void UUserProfile::ConfirmShopPurchase(int32 OptionIndex)
 	check(!CurrentShopOptions[OptionIndex].Purchased);
 	
 	CurrentShopOptions[OptionIndex].Purchased = true;
-	AddUnitToInventory(CurrentShopOptions[OptionIndex].UnitKey);
+	//AddUnitToInventory(CurrentShopOptions[OptionIndex].UnitKey); @CLEAN
 	UpdateWallet(-CurrentShopOptions[OptionIndex].Cost);
 }
 
-bool UUserProfile::StartTransaction(int32 index)
-{
-	if(index < 0 || index >= InventoryUnits.Num())
-	{
-		return false;
-	}
-
-	ActiveTransaction.InvIndex = index;
-	FName unitKey = GetTransactionUnitKey();
-	ActiveTransaction.UnitActor = CreateUnit(unitKey);
-	OnUpdatedTransaction.Broadcast();
-	return true;
-}
+//@CLEAN
+// bool UUserProfile::StartTransaction(int32 index)
+// {
+// 	if(index < 0 || index >= InventoryUnits.Num())
+// 	{
+// 		return false;
+// 	}
+//
+// 	ActiveTransaction.InvIndex = index;
+// 	FName unitKey = GetTransactionUnitKey();
+// 	ActiveTransaction.UnitActor = CreateUnit(unitKey);
+// 	OnUpdatedTransaction.Broadcast();
+// 	return true;
+// }
 
 void UUserProfile::TryToCycle(bool CW)
 {
@@ -292,8 +293,9 @@ bool UUserProfile::ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col)
 	
 	if(!PlaceUnit(Grid, ActiveTransaction.UnitActor, Row, Col))
 		return false;
-	
-	RemoveUnitFromInventory(ActiveTransaction.UnitActor->UnitKey);
+
+	//@CLEAN
+	//RemoveUnitFromInventory(ActiveTransaction.UnitActor->UnitKey);
 
 	ActiveTransaction.Reset();
 	GridMain->RefreshHighlights();
@@ -324,13 +326,15 @@ bool UUserProfile::PlaceUnit(ASkyGrid* InGrid, AGridUnitActor* UnitActor, int32 
 	return InGrid->PlaceUnit(UnitActor, Row, Col);
 }
 
+// Move to storage
 void UUserProfile::ClearUnit(ASkyGrid* Grid, AGridUnitActor* Unit)
+//void UUserProfile::MoveUnit(ASkyGrid* Grid, AGridUnitActor* Unit)
 {
 	if(!IsValid(Unit))
 		return;
 
 	Unit->Destroy();
-	AddUnitToInventory(Unit->UnitKey);
+	//AddUnitToInventory(Unit->UnitKey); @CLEAN
 
 	//remove buffs
 	auto& unitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(Unit->UnitKey);
@@ -373,22 +377,23 @@ void UUserProfile::ClearUnit(ASkyGrid* Grid, AGridUnitActor* Unit)
 	}
 }
 
-const FName& UUserProfile::GetUnitKeyFromInventory(int32 InventoryIndex)
-{
-	return InventoryUnits[InventoryIndex].UnitKey;
-}
-
-const FName& UUserProfile::GetTransactionUnitKey()
-{
-	check(IsTransactionActive());
-	return GetUnitKeyFromInventory(ActiveTransaction.InvIndex);
-}
-
-const FUnitTemplate& UUserProfile::GetTransactionUnitTemplate()
-{
-	FName unitKey = GetTransactionUnitKey();
-	return ASkyGameMode::Get(this)->GetUnitTemplate(unitKey);
-}
+//@CLEAN
+// const FName& UUserProfile::GetUnitKeyFromInventory(int32 InventoryIndex)
+// {
+// 	return InventoryUnits[InventoryIndex].UnitKey;
+// }
+//
+// const FName& UUserProfile::GetTransactionUnitKey()
+// {
+// 	check(IsTransactionActive());
+// 	return GetUnitKeyFromInventory(ActiveTransaction.InvIndex);
+// }
+//
+// const FUnitTemplate& UUserProfile::GetTransactionUnitTemplate()
+// {
+// 	FName unitKey = GetTransactionUnitKey();
+// 	return ASkyGameMode::Get(this)->GetUnitTemplate(unitKey);
+// }
 
 bool UUserProfile::IsTransactionActive()
 {
@@ -403,7 +408,8 @@ void UUserProfile::HandleGridFocused(AGridCellActor* Cell)
 		ActiveTransaction.UnitActor->SetOriginCell(Cell);
 		
 		//check each cell for valid tags
-		auto& unitBP = GetTransactionUnitTemplate();
+		auto& unitBP = ASkyGameMode::Get(this)->GetUnitTemplate(ActiveTransaction.UnitActor->UnitKey);
+		//auto& unitBP = GetTransactionUnitTemplate(); @CLEAN
 		auto coords = ActiveTransaction.UnitActor->GetOrientedCoords(unitBP.GridShape);
 		TArray<AGridCellActor*> cells;
 		Cell->Grid->GetCellShape(cells, Cell->Row, Cell->Col, coords);
@@ -442,21 +448,27 @@ void UUserProfile::HandleGridInteract(AGridCellActor* Cell)
 			{
 				return;
 			}
+
+			// move any dependent units to storage.
+			if(Cell->Grid == GridMain)
+			{
+				
+			}
 			
-			FName unitKey = unit->UnitKey;
-			ClearUnit(Cell->Grid, unit);
+			//FName unitKey = unit->UnitKey;
+			//ClearUnit(Cell->Grid, unit);
 
 			//restart the transaction with the unit we just removed
-			int32 inventoryIdx = 0;
-			for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
-			{
-				if(InventoryUnits[idx].UnitKey == unitKey)
-				{
-					inventoryIdx = idx;
-					break;
-				}
-			}
-			StartTransaction(inventoryIdx);
+			//int32 inventoryIdx = 0;
+			//for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
+			//{
+			//	if(InventoryUnits[idx].UnitKey == unitKey)
+			//	{
+			//		inventoryIdx = idx;
+			//		break;
+			//	}
+			//}
+			//StartTransaction(inventoryIdx);
 
 			Cell->Grid->RefreshUnitBonuses();
 			Cell->RefreshHighlight();
