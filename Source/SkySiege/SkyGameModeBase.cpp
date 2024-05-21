@@ -13,7 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "SkyLog.h"
 
-ASkyGameMode* ASkyGameMode::Get(UObject* WorldContext)
+ASkyGameMode* ASkyGameMode::Get(const UObject* WorldContext)
 {
 	return Cast<ASkyGameMode>(UGameplayStatics::GetGameMode(WorldContext));
 }
