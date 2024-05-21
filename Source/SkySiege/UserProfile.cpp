@@ -176,52 +176,6 @@ bool UUserProfile::CanRerollShop()
 	return Wallet >= GetConfig().ShopRerollCost;
 }
 
-// void UUserProfile::AddUnitToInventory(const FName& UnitKey)
-// {
-// 	int32 foundIdx = -1;
-// 	for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
-// 	{
-// 		if(InventoryUnits[idx].UnitKey == UnitKey)
-// 		{
-// 			check(InventoryUnits[idx].Count > 0);
-// 			foundIdx = idx;
-// 			break;
-// 		}
-// 	}
-// 	
-// 	if(foundIdx >= 0)
-// 	{
-// 		InventoryUnits[foundIdx].Count++;
-// 	}
-// 	else
-// 	{
-// 		FInventoryUnit invUnit;
-// 		invUnit.UnitKey = UnitKey;
-// 		invUnit.Count = 1;
-// 		InventoryUnits.Add(invUnit);
-// 	}
-// 	
-// 	OnUpdatedUnitInventory.Broadcast();
-// }
-//
-// void UUserProfile::RemoveUnitFromInventory(const FName& UnitKey)
-// {
-// 	for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
-// 	{
-// 		if(InventoryUnits[idx].UnitKey == UnitKey)
-// 		{
-// 			check(InventoryUnits[idx].Count > 0);
-// 			InventoryUnits[idx].Count--;
-//
-// 			if(InventoryUnits[idx].Count <= 0)
-// 				InventoryUnits.RemoveAt(idx);
-//
-// 			OnUpdatedUnitInventory.Broadcast();
-// 			return;
-// 		}
-// 	}
-// }
-
 bool UUserProfile::CanAfford(int32 OptionIndex)
 {
 	return Wallet >= CurrentShopOptions[OptionIndex].Cost;
@@ -234,24 +188,16 @@ void UUserProfile::ConfirmShopPurchase(int32 OptionIndex)
 	check(!CurrentShopOptions[OptionIndex].Purchased);
 	
 	CurrentShopOptions[OptionIndex].Purchased = true;
-	//AddUnitToInventory(CurrentShopOptions[OptionIndex].UnitKey); @CLEAN
 	UpdateWallet(-CurrentShopOptions[OptionIndex].Cost);
 }
 
-//@CLEAN
-// bool UUserProfile::StartTransaction(int32 index)
-// {
-// 	if(index < 0 || index >= InventoryUnits.Num())
-// 	{
-// 		return false;
-// 	}
-//
-// 	ActiveTransaction.InvIndex = index;
-// 	FName unitKey = GetTransactionUnitKey();
-// 	ActiveTransaction.UnitActor = CreateUnit(unitKey);
-// 	OnUpdatedTransaction.Broadcast();
-// 	return true;
-// }
+void UUserProfile::TryToCancel()
+{
+	if(IsTransactionActive())
+	{
+		CancelTransaction();
+	}
+}
 
 void UUserProfile::TryToCycle(bool CW)
 {
@@ -264,44 +210,6 @@ void UUserProfile::TryToCycle(bool CW)
 		GridMain->CycleFocus();
 		GridStorage->CycleFocus();
 	}
-}
-
-void UUserProfile::TransactionRotate(bool bRotateCW)
-{
-	check(IsTransactionActive());
-	ActiveTransaction.UnitActor->Rotate();
-	GridMain->RefreshHighlights();
-	OnUpdatedTransaction.Broadcast();
-}
-
-void UUserProfile::EndTransaction()
-{
-	if(!IsTransactionActive())
-		return;
-
-	check(ActiveTransaction.InvIndex >= 0);
-	ActiveTransaction.UnitActor->Destroy();
-	ActiveTransaction.Reset();
-	GridMain->RefreshHighlights();
-	OnUpdatedTransaction.Broadcast();
-}
-
-bool UUserProfile::ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col)
-{
-	if(!IsTransactionActive())
-		return false;
-	
-	if(!PlaceUnit(Grid, ActiveTransaction.UnitActor, Row, Col))
-		return false;
-
-	//@CLEAN
-	//RemoveUnitFromInventory(ActiveTransaction.UnitActor->UnitKey);
-
-	ActiveTransaction.Reset();
-	GridMain->RefreshHighlights();
-
-	OnUpdatedTransaction.Broadcast();
-	return true;
 }
 
 AGridUnitActor* UUserProfile::CreateUnit(const FName& InUnitKey)
@@ -326,24 +234,20 @@ bool UUserProfile::PlaceUnit(ASkyGrid* InGrid, AGridUnitActor* UnitActor, int32 
 	return InGrid->PlaceUnit(UnitActor, Row, Col);
 }
 
-// Move to storage
-void UUserProfile::ClearUnit(ASkyGrid* Grid, AGridUnitActor* Unit)
-//void UUserProfile::MoveUnit(ASkyGrid* Grid, AGridUnitActor* Unit)
+void UUserProfile::ClearUnit(AGridUnitActor* Unit)
 {
-	if(!IsValid(Unit))
-		return;
-
-	Unit->Destroy();
-	//AddUnitToInventory(Unit->UnitKey); @CLEAN
-
 	//remove buffs
+	ASkyGrid* grid = Unit->OriginGridCell->Grid;
+	int32 row = Unit->OriginGridCell->Row;
+	int32 col = Unit->OriginGridCell->Col;
 	auto& unitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(Unit->UnitKey);
+
 	for(auto& bonusCfg : unitTemplate.BonusConfig)
 	{
 		auto buffCoords = Unit->GetOrientedCoords(bonusCfg.Coords);
-		TArray<AGridCellActor*> cells;
-		Grid->GetCellShape(cells, Unit->OriginGridCell->Row, Unit->OriginGridCell->Col, buffCoords);
-		for(auto& cell : cells)
+		TArray<AGridCellActor*> buffCells;
+		grid->GetCellShape(buffCells, row, col, buffCoords);
+		for(auto& cell : buffCells)
 		{
 			for(auto& cellUnit : cell->UnitActors)
 			{
@@ -352,11 +256,10 @@ void UUserProfile::ClearUnit(ASkyGrid* Grid, AGridUnitActor* Unit)
 		}
 	}
 
-	auto coords = Unit->GetOrientedCoords(unitTemplate.GridShape);
-	AGridCellActor* origin = Unit->OriginGridCell;
+	// Remove this Unit, move any other dependent units to storage
 	TArray<AGridCellActor*> unitCells;
-	Grid->GetCellShape(unitCells, origin->Row, origin->Col, coords);
-	TArray<AGridUnitActor*> unitsToRemove;
+	grid->GetCellShape(unitCells, row, col, Unit->GetOrientedShape());
+	TArray<AGridUnitActor*> dependentUnits;
 
 	for(AGridCellActor* cell : unitCells)
 	{
@@ -367,37 +270,81 @@ void UUserProfile::ClearUnit(ASkyGrid* Grid, AGridUnitActor* Unit)
 			auto& cellUnitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(unit->UnitKey);
 			auto& tags = cellUnitTemplate.TagsRequiredToBuild;
 			if(!tags.IsEmpty() && !cell->HasUnitTags(tags))
-				unitsToRemove.AddUnique(unit);
+				dependentUnits.AddUnique(unit);
 		}
 	}
-	
-	for(AGridUnitActor* unit : unitsToRemove)
+
+	// move any dependent units to storage
+	for(AGridUnitActor* unit : dependentUnits)
 	{
-		ClearUnit(Grid, unit);
+		MoveUnit(unit, GridStorage);
 	}
 }
 
-//@CLEAN
-// const FName& UUserProfile::GetUnitKeyFromInventory(int32 InventoryIndex)
-// {
-// 	return InventoryUnits[InventoryIndex].UnitKey;
-// }
-//
-// const FName& UUserProfile::GetTransactionUnitKey()
-// {
-// 	check(IsTransactionActive());
-// 	return GetUnitKeyFromInventory(ActiveTransaction.InvIndex);
-// }
-//
-// const FUnitTemplate& UUserProfile::GetTransactionUnitTemplate()
-// {
-// 	FName unitKey = GetTransactionUnitKey();
-// 	return ASkyGameMode::Get(this)->GetUnitTemplate(unitKey);
-// }
+// Move to storage, find an open cell for this unit, clear it's buffs/dependents, move the unit to it's ToGrid
+void UUserProfile::MoveUnit(AGridUnitActor* Unit, ASkyGrid* DestGrid)
+{
+	ClearUnit(Unit);
+	auto shape = Unit->GetOrientedShape();
+	AGridCellActor* newCell = DestGrid->FindValidCell(Unit);
+	check(newCell);
+	DestGrid->PlaceUnit(Unit, newCell->Row, newCell->Col);
+}
 
 bool UUserProfile::IsTransactionActive()
 {
-	return ActiveTransaction.InvIndex != -1;
+	return ActiveTransaction.Active;
+}
+
+void UUserProfile::StartTransaction(AGridUnitActor* Unit)
+{
+	ActiveTransaction.Active = true;
+	ActiveTransaction.UnitActor = Unit;
+	ActiveTransaction.OriginalCell = Unit->OriginGridCell;
+	ActiveTransaction.OriginalOrientation = Unit->GridOrientation;
+
+	// lift this unit actor from it's cells, clearing up any dependencies
+	ClearUnit(Unit);
+	Unit->OriginGridCell->Grid->RefreshUnitBonuses();
+	Unit->OriginGridCell->RefreshHighlight();
+}
+
+bool UUserProfile::ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col)
+{
+	if(!IsTransactionActive())
+		return false;
+	
+	if(!Grid->PlaceUnit(ActiveTransaction.UnitActor, Row, Col))
+		return false;
+
+	ActiveTransaction.Reset();
+	OnUpdatedTransaction.Broadcast();
+	return true;
+}
+
+void UUserProfile::TransactionRotate(bool bRotateCW)
+{
+	check(IsTransactionActive());
+	ActiveTransaction.UnitActor->Rotate();
+	GridMain->RefreshHighlights();
+	OnUpdatedTransaction.Broadcast();
+}
+
+void UUserProfile::CancelTransaction()
+{
+	check(IsTransactionActive());
+
+	AGridUnitActor* unit = ActiveTransaction.UnitActor;
+	ECellOrientation orientation = ActiveTransaction.OriginalOrientation;
+	AGridCellActor* cell = ActiveTransaction.OriginalCell;
+	ActiveTransaction.Reset();
+
+	// reset UnitActor back to it's original locaiton, orientation
+	unit->RotateTo(orientation);
+	cell->Grid->PlaceUnit(unit, cell->Row, cell->Col);
+
+	GridMain->RefreshHighlights();
+	OnUpdatedTransaction.Broadcast();
 }
 
 void UUserProfile::HandleGridFocused(AGridCellActor* Cell)
@@ -406,13 +353,10 @@ void UUserProfile::HandleGridFocused(AGridCellActor* Cell)
 	if(IsTransactionActive())
 	{
 		ActiveTransaction.UnitActor->SetOriginCell(Cell);
-		
-		//check each cell for valid tags
-		auto& unitBP = ASkyGameMode::Get(this)->GetUnitTemplate(ActiveTransaction.UnitActor->UnitKey);
-		//auto& unitBP = GetTransactionUnitTemplate(); @CLEAN
-		auto coords = ActiveTransaction.UnitActor->GetOrientedCoords(unitBP.GridShape);
+		auto coords = ActiveTransaction.UnitActor->GetOrientedShape();
 		TArray<AGridCellActor*> cells;
 		Cell->Grid->GetCellShape(cells, Cell->Row, Cell->Col, coords);
+		auto& unitBP = ASkyGameMode::Get(this)->GetUnitTemplate(ActiveTransaction.UnitActor->UnitKey);
 		
 		for(auto& c : cells)
 		{
@@ -448,30 +392,7 @@ void UUserProfile::HandleGridInteract(AGridCellActor* Cell)
 			{
 				return;
 			}
-
-			// move any dependent units to storage.
-			if(Cell->Grid == GridMain)
-			{
-				
-			}
-			
-			//FName unitKey = unit->UnitKey;
-			//ClearUnit(Cell->Grid, unit);
-
-			//restart the transaction with the unit we just removed
-			//int32 inventoryIdx = 0;
-			//for(int32 idx = 0; idx < InventoryUnits.Num(); ++idx)
-			//{
-			//	if(InventoryUnits[idx].UnitKey == unitKey)
-			//	{
-			//		inventoryIdx = idx;
-			//		break;
-			//	}
-			//}
-			//StartTransaction(inventoryIdx);
-
-			Cell->Grid->RefreshUnitBonuses();
-			Cell->RefreshHighlight();
+			StartTransaction(unit);
 		}
 	}
 }

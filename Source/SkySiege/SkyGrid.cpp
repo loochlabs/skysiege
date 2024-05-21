@@ -97,6 +97,29 @@ void ASkyGrid::GetCellShape(TArray<AGridCellActor*>& Out, int32 Row, int32 Col, 
 	}	
 }
 
+AGridCellActor* ASkyGrid::FindValidCell(AGridUnitActor* Unit)
+{
+	check(Unit);
+	auto shape = Unit->GetOrientedShape();
+	for(auto& cell : Cells)
+	{
+		TArray<AGridCellActor*> unitCells;
+		GetCellShape(unitCells, cell.Key.Row, cell.Key.Col, shape);
+		auto& unitTemplate = Unit->GetTemplate();
+
+		bool bValid = true;
+		for(auto& c : unitCells)
+		{
+			bValid &= c->CanBuild(unitTemplate);
+		}
+		if(bValid)
+		{
+			return unitCells[0];
+		}
+	}
+	return nullptr;
+}
+
 bool ASkyGrid::IsGridUnitEmpty(int32 row, int32 col)
 {
 	AGridCellActor* cell = GetCell(row, col);
@@ -178,12 +201,11 @@ bool ASkyGrid::PlaceUnit(AGridUnitActor* Unit, int32 Row, int32 Col)
 	if(!origin)
 		return false;
 
-	auto& unitTemplate = Unit->GetTemplate();
-	check(unitTemplate.GridShape.Num() > 0);
-	auto coords = Unit->GetOrientedCoords(unitTemplate.GridShape);
+	auto coords = Unit->GetOrientedShape();
 	TArray<AGridCellActor*> cells;
 	GetCellShape(cells, Row, Col, coords);
 
+	auto& unitTemplate = Unit->GetTemplate();
 	for(auto& c : cells)
 	{
 		if(!c->CanBuild(unitTemplate))
@@ -197,6 +219,7 @@ bool ASkyGrid::PlaceUnit(AGridUnitActor* Unit, int32 Row, int32 Col)
 	}
 	Unit->SetOriginCell(origin);
 	RefreshUnitBonuses();
+	RefreshHighlights();
 	return true;
 }
 

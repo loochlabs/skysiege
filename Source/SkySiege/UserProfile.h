@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CellOrientation.h"
 #include "SkyGrid.h"
 #include "UObject/NoExportTypes.h"
 #include "UserProfile.generated.h"
@@ -89,22 +90,23 @@ enum class ETransactionState : uint8
 	Success
 };
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FTransactionData
 {
 	GENERATED_BODY()
 
 	void Reset()
 	{
-		InvIndex = -1;
+		//InvIndex = -1; @CLEAN
+		Active = false;
 		UnitActor = nullptr;
 	};
 
-	UPROPERTY(BlueprintReadWrite)
-	int32 InvIndex = -1;
-
-	UPROPERTY(BlueprintReadWrite)
+	//int32 InvIndex = -1;
+	bool Active = false;
 	AGridUnitActor* UnitActor = nullptr;
+	AGridCellActor* OriginalCell = nullptr;
+	ECellOrientation OriginalOrientation = ECellOrientation::North;
 };
 
 
@@ -133,47 +135,30 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool CanRerollShop();
 
-	//@CLEAN
-	//UFUNCTION(BlueprintCallable)
-	//void AddUnitToInventory(const FName& UnitKey);
-	//
-	//UFUNCTION(BlueprintCallable)
-	//void RemoveUnitFromInventory(const FName& UnitKey);
-
 	UFUNCTION(BlueprintPure)
 	bool CanAfford(int32 OptionIndex);
 	
 	UFUNCTION(BlueprintCallable)
 	void ConfirmShopPurchase(int32 OptionIndex);
 
-	//@CLEAN
-	//UFUNCTION(BlueprintCallable)
-	//bool StartTransaction(int32 index);
-
 	UFUNCTION(BlueprintCallable)
-	void TryToCycle(bool CW);
+	void TryToCancel();
 	
 	UFUNCTION(BlueprintCallable)
-	void TransactionRotate(bool bRotateCW);
-
-	bool ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col);
-
-	UFUNCTION(BlueprintCallable)
-	void EndTransaction();
+	void TryToCycle(bool CW);
 	
 	AGridUnitActor* CreateUnit(const FName& InUnitKey);
 	bool PlaceUnit(ASkyGrid* Grid, const FName& UnitKey, int32 Row, int32 Col);
 	bool PlaceUnit(ASkyGrid* Grid, AGridUnitActor* UnitActor, int32 Row, int32 Col);
-	void ClearUnit(ASkyGrid* Grid, AGridUnitActor* Unit);
+	void ClearUnit(AGridUnitActor* Unit);
+	void MoveUnit(AGridUnitActor* Unit, ASkyGrid* DestGrid);
 
-	//@CLEAN
-	//const FName& GetUnitKeyFromInventory(int32 InventoryIndex);
-	//const FName& GetTransactionUnitKey();
-	//const FUnitTemplate& GetTransactionUnitTemplate();
-
-	UFUNCTION(BlueprintPure)
 	bool IsTransactionActive();
-
+	void StartTransaction(AGridUnitActor* Unit);
+	bool ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col);
+	void TransactionRotate(bool bRotateCW);
+	void CancelTransaction();
+	
 	UFUNCTION()
 	void HandleGridFocused(AGridCellActor* Cell);
 
@@ -204,11 +189,6 @@ public:
 	UPROPERTY(SaveGame, BlueprintReadWrite)
 	TArray<FShopOption> CurrentShopOptions;
 
-	//@CLEAN
-	//UPROPERTY(BlueprintReadWrite)
-	//TArray<FInventoryUnit> InventoryUnits;
-
-	UPROPERTY(BlueprintReadWrite)
 	FTransactionData ActiveTransaction;
 
 	UPROPERTY(BlueprintAssignable)
@@ -216,10 +196,6 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FProfileUpdatedWalletDelegate OnUpdatedWallet;
-
-	//@CLEAN
-	//UPROPERTY(BlueprintAssignable)
-	//FProfileUpdatedUnitInventoryDelegate OnUpdatedUnitInventory;
 
 	UPROPERTY(BlueprintAssignable)
 	FProfileTransactionDelegate OnUpdatedTransaction;

@@ -43,19 +43,42 @@ void AGridUnitActor::SetOriginCell(AGridCellActor* Cell)
 	SetActorLocation(loc);
 }
 
+void AGridUnitActor::Rotate(bool CW)
+{
+	switch(GridOrientation)
+	{
+	case ECellOrientation::North:	GridOrientation = ECellOrientation::East; break;  
+	case ECellOrientation::East:	GridOrientation = ECellOrientation::South; break;  
+	case ECellOrientation::South:	GridOrientation = ECellOrientation::West; break;  
+	case ECellOrientation::West:	GridOrientation = ECellOrientation::North; break;
+
+	default:
+		check(false); //invalid orientation
+	}
+	
+	OnUpdatedOrientation();
+}
+
+void AGridUnitActor::RotateTo(ECellOrientation InOrientation)
+{
+	while(GridOrientation != InOrientation)
+	{
+		Rotate();
+	}
+}
+
 TArray<FCoordinates> AGridUnitActor::GetOrientedCoords(const TArray<FCoordinates>& Coords)
 {
-	TArray<FCoordinates> result = Coords;
-
+	TArray<FCoordinates> results = Coords;
 	auto rotate = [&](int32 RotateCount)
 	{
 		for(int32 n = 0; n < RotateCount; ++n)
-		for(auto& coord : result)
-		{
-			int32 temp = coord.Row;
-			coord.Row = -coord.Col;
-			coord.Col = temp;
-		}
+			for(auto& coord : results)
+			{
+				int32 temp = coord.Row;
+				coord.Row = -coord.Col;
+				coord.Col = temp;
+			}
 	};
 
 	switch(GridOrientation)
@@ -75,25 +98,18 @@ TArray<FCoordinates> AGridUnitActor::GetOrientedCoords(const TArray<FCoordinates
 	default:
 		break;
 	}
-	
-	return result;
+	return results;
 }
 
-void AGridUnitActor::Rotate(bool CW)
+TArray<FCoordinates> AGridUnitActor::GetOrientedShape()
 {
-	switch(GridOrientation)
-	{
-	case ECellOrientation::North:	GridOrientation = ECellOrientation::East; break;  
-	case ECellOrientation::East:	GridOrientation = ECellOrientation::South; break;  
-	case ECellOrientation::South:	GridOrientation = ECellOrientation::West; break;  
-	case ECellOrientation::West:	GridOrientation = ECellOrientation::North; break;
-
-	default:
-		check(false); //invalid orientation
-	}
-	
-	OnUpdatedOrientation();
+	auto& unitTemplate = GetTemplate();
+	check(unitTemplate.GridShape.Num() > 0);
+	return GetOrientedCoords(unitTemplate.GridShape);
 }
+
+
+
 
 void AGridUnitActor::SetFocus(bool bFocused)
 {

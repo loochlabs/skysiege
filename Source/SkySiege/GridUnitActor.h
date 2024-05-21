@@ -33,8 +33,10 @@ public:
 	const FUnitTemplate& GetTemplate();
 
 	void SetOriginCell(AGridCellActor* Cell);
-	TArray<FCoordinates> GetOrientedCoords(const TArray<FCoordinates>& Coords);
 	void Rotate(bool CW = true);
+	void RotateTo(ECellOrientation InOrientation);
+	TArray<FCoordinates> GetOrientedCoords(const TArray<FCoordinates>& Coords);
+	TArray<FCoordinates> GetOrientedShape();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnUpdatedOrientation();

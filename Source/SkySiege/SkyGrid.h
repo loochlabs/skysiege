@@ -85,6 +85,7 @@ public:
 	AGridCellActor* GetCell(int32 row, int32 col);
 
 	void GetCellShape(TArray<AGridCellActor*>& Out, int32 Row, int32 Col, const TArray<FCoordinates>& Shape);
+	AGridCellActor* FindValidCell(AGridUnitActor* Unit);
 	
 	UFUNCTION(BlueprintCallable)
 	bool IsGridUnitEmpty(int32 row, int32 col);
