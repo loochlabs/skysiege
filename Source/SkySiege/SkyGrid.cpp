@@ -165,8 +165,12 @@ void ASkyGrid::SetFocus(int32 Row, int32 Col)
 void ASkyGrid::CycleFocus()
 {
 	FocusIndex++;
-	AGridCellActor* cell = GetCell(Focus.Row, Focus.Col);
-	cell->FocusUnit();
+
+	// cell could be null since we're juggling multiple grids now
+	if(AGridCellActor* cell = GetCell(Focus.Row, Focus.Col))
+	{
+		cell->FocusUnit();
+	}
 }
 
 void ASkyGrid::Interact(int32 Row, int32 Col)
