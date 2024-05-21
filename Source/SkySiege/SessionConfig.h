@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SkyGrid.h"
 #include "SessionConfig.generated.h"
 
 
@@ -19,8 +20,22 @@ struct FSessionConfig
 	void Setup();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
-	TSubclassOf<ASkyGrid> GridClass = nullptr;
+	FGridConfig GridConfig;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
+	FGridConfig GridStorageConfig;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
+	FGridConfig GridShopConfig;
+
+	//@CLEAN
+	//
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
+	// TSubclassOf<ASkyGrid> GridClass = nullptr;
+	//
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
+	// TSubclassOf<ASkyGrid> GridStorageClass = nullptr;
+	//
 	UPROPERTY(EditAnywhere, Category="Unit Data")
 	UDataTable* UnitTemplateData = nullptr;
 	

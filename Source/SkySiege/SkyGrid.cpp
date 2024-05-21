@@ -8,6 +8,36 @@
 #include "UnitTemplate.h"
 
 
+void ASkyGrid::Setup(const FGridConfig& InGridConfig)
+{
+	Type = InGridConfig.Type;
+	SetActorLocation(InGridConfig.WorldLocation);
+	SetActorRotation(InGridConfig.WorldRotation);
+
+	// hard coding grid spawning
+	for(int32 c = 0; c < InGridConfig.Cols; ++c)
+	{
+		for(int32 r = 0; r < InGridConfig.Rows; ++r)
+		{
+			CreateCell(r, c);
+		}
+	}
+
+	// padding
+	for(int32 c = -InGridConfig.CellPadding; c < InGridConfig.CellPadding + InGridConfig.Cols; ++c)
+	{
+		for(int32 r = -InGridConfig.CellPadding; r < InGridConfig.CellPadding + InGridConfig.Rows; ++r)
+		{
+			if(GetCell(r, c))
+				continue;
+
+			CreateCell(r, c);
+			AGridCellActor* cell = GetCell(r, c);
+			cell->SetSelectable(false);
+		}
+	}
+}
+
 void ASkyGrid::Teardown()
 {
 	for(auto& cellPair : Cells)
@@ -106,7 +136,6 @@ void ASkyGrid::SetFocus(int32 Row, int32 Col)
 	AGridCellActor* cell = GetCell(Row, Col);
 	check(cell);
 	cell->FocusUnit();
-
 	OnFocused.Broadcast(cell);
 }
 
@@ -150,6 +179,7 @@ bool ASkyGrid::PlaceUnit(AGridUnitActor* Unit, int32 Row, int32 Col)
 		return false;
 
 	auto& unitTemplate = Unit->GetTemplate();
+	check(unitTemplate.GridShape.Num() > 0);
 	auto coords = Unit->GetOrientedCoords(unitTemplate.GridShape);
 	TArray<AGridCellActor*> cells;
 	GetCellShape(cells, Row, Col, coords);

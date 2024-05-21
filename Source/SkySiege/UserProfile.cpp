@@ -22,50 +22,42 @@ void UUserProfile::Setup(const FUserProfileConfig& InConfig)
 	CurrentLevel = -1;
 	
 	//spawn grid
-	check(!IsValid(Grid));
+	check(!IsValid(GridMain));
 	UWorld* world = GetWorld();
-	auto& cfg = GetConfig();
-	Grid = world->SpawnActor<ASkyGrid>(cfg.GridClass);
-	Grid->SetActorLocation(InConfig.GridLocation);
-	Grid->SetActorRotation(InConfig.GridRotation);
-	Grid->Cleanup();
-	Grid->OnFocused.AddDynamic(this, &UUserProfile::HandleGridFocused);
-	Grid->OnInteract.AddDynamic(this, &UUserProfile::HandleGridInteract);
+	GridMain = world->SpawnActor<ASkyGrid>(InConfig.GridConfig.GridClass);
+	GridMain->Setup(InConfig.GridConfig);
+	GridMain->OnFocused.AddDynamic(this, &UUserProfile::HandleGridFocused);
+	GridMain->OnInteract.AddDynamic(this, &UUserProfile::HandleGridInteract);
 
-	// hard coding grid spawning
-	for(int32 c = 0; c < InConfig.GridCols; ++c)
+	if(InConfig.bSpawnStorage)
 	{
-		for(int32 r = 0; r < InConfig.GridRows; ++r)
-		{
-			Grid->CreateCell(r, c);
-		}
-	}
+		GridStorage = world->SpawnActor<ASkyGrid>(InConfig.GridStorageConfig.GridClass);
+		GridStorage->Setup(InConfig.GridStorageConfig);
+		GridStorage->OnFocused.AddDynamic(this, &UUserProfile::HandleGridFocused);
+		GridStorage->OnInteract.AddDynamic(this, &UUserProfile::HandleGridInteract);
 
-	// padding
-	for(int32 c = -InConfig.GridPadding; c < InConfig.GridPadding + InConfig.GridCols; ++c)
-	{
-		for(int32 r = -InConfig.GridPadding; r < InConfig.GridPadding + InConfig.GridRows; ++r)
+		// add storage units to all cells
+		for(auto& cellPair : GridStorage->Cells)
 		{
-			if(Grid->GetCell(r, c))
-				continue;
-
-			Grid->CreateCell(r, c);
-			AGridCellActor* cell = Grid->GetCell(r, c);
-			cell->SetSelectable(false);
+			int32 row = cellPair.Key.Row;
+			int32 col = cellPair.Key.Col;
+			PlaceUnit(GridStorage, "unit_storage", row, col);
 		}
 	}
 
 	// starting units
 	for(const FUnitBuildTemplate& unit : InConfig.StartingUnits)
 	{
-		PlaceUnit(unit.UnitKey, unit.Row, unit.Col);
+		PlaceUnit(GridMain, unit.UnitKey, unit.Row, unit.Col);
 	}
 }
 
 void UUserProfile::Teardown()
 {
-	Grid->Teardown();
-	Grid = nullptr;
+	GridMain->Teardown();
+	GridMain = nullptr;
+	GridStorage->Teardown();
+    GridStorage = nullptr;
 }
 
 void UUserProfile::StartPhase(ESessionPhase Phase)
@@ -268,7 +260,8 @@ void UUserProfile::TryToCycle(bool CW)
 	}
 	else
 	{
-		Grid->CycleFocus();
+		GridMain->CycleFocus();
+		GridStorage->CycleFocus();
 	}
 }
 
@@ -276,7 +269,7 @@ void UUserProfile::TransactionRotate(bool bRotateCW)
 {
 	check(IsTransactionActive());
 	ActiveTransaction.UnitActor->Rotate();
-	Grid->RefreshHighlights();
+	GridMain->RefreshHighlights();
 	OnUpdatedTransaction.Broadcast();
 }
 
@@ -288,22 +281,22 @@ void UUserProfile::EndTransaction()
 	check(ActiveTransaction.InvIndex >= 0);
 	ActiveTransaction.UnitActor->Destroy();
 	ActiveTransaction.Reset();
-	Grid->RefreshHighlights();
+	GridMain->RefreshHighlights();
 	OnUpdatedTransaction.Broadcast();
 }
 
-bool UUserProfile::ConfirmTransaction(int32 Row, int32 Col)
+bool UUserProfile::ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col)
 {
 	if(!IsTransactionActive())
 		return false;
 	
-	if(!PlaceUnit(ActiveTransaction.UnitActor, Row, Col))
+	if(!PlaceUnit(Grid, ActiveTransaction.UnitActor, Row, Col))
 		return false;
 	
 	RemoveUnitFromInventory(ActiveTransaction.UnitActor->UnitKey);
 
 	ActiveTransaction.Reset();
-	Grid->RefreshHighlights();
+	GridMain->RefreshHighlights();
 
 	OnUpdatedTransaction.Broadcast();
 	return true;
@@ -319,19 +312,19 @@ AGridUnitActor* UUserProfile::CreateUnit(const FName& InUnitKey)
 	return unit;
 }
 
-bool UUserProfile::PlaceUnit(const FName& UnitKey, int32 Row, int32 Col)
+bool UUserProfile::PlaceUnit(ASkyGrid* Grid, const FName& UnitKey, int32 Row, int32 Col)
 {
 	AGridUnitActor* unitActor = CreateUnit(UnitKey);
-	return PlaceUnit(unitActor, Row, Col);
+	return PlaceUnit(Grid, unitActor, Row, Col);
 }
 
-bool UUserProfile::PlaceUnit(AGridUnitActor* UnitActor, int32 Row, int32 Col)
+bool UUserProfile::PlaceUnit(ASkyGrid* InGrid, AGridUnitActor* UnitActor, int32 Row, int32 Col)
 {
 	check(UnitActor);
-	return Grid->PlaceUnit(UnitActor, Row, Col);
+	return InGrid->PlaceUnit(UnitActor, Row, Col);
 }
 
-void UUserProfile::ClearUnit(AGridUnitActor* Unit)
+void UUserProfile::ClearUnit(ASkyGrid* Grid, AGridUnitActor* Unit)
 {
 	if(!IsValid(Unit))
 		return;
@@ -376,7 +369,7 @@ void UUserProfile::ClearUnit(AGridUnitActor* Unit)
 	
 	for(AGridUnitActor* unit : unitsToRemove)
 	{
-		ClearUnit(unit);
+		ClearUnit(Grid, unit);
 	}
 }
 
@@ -413,7 +406,7 @@ void UUserProfile::HandleGridFocused(AGridCellActor* Cell)
 		auto& unitBP = GetTransactionUnitTemplate();
 		auto coords = ActiveTransaction.UnitActor->GetOrientedCoords(unitBP.GridShape);
 		TArray<AGridCellActor*> cells;
-		Grid->GetCellShape(cells, Cell->Row, Cell->Col, coords);
+		Cell->Grid->GetCellShape(cells, Cell->Row, Cell->Col, coords);
 		
 		for(auto& c : cells)
 		{
@@ -431,17 +424,27 @@ void UUserProfile::HandleGridInteract(AGridCellActor* Cell)
 {
 	if(IsTransactionActive())
 	{
-		ConfirmTransaction(Cell->Row, Cell->Col);
+		ConfirmTransaction(Cell->Grid, Cell->Row, Cell->Col);
 	}
 	else
 	{
 		// clear units
 		if(Cell->UnitActors.Num() > 0)
 		{
-			int32 focusIdx = Grid->FocusIndex % Cell->UnitActors.Num();
+			int32 focusIdx = Cell->Grid->FocusIndex % Cell->UnitActors.Num();
 			AGridUnitActor* unit = Cell->UnitActors[focusIdx];
+
+			// check if we can pickup this unit
+			FGameplayTag tag = FGameplayTag::RequestGameplayTag("Unit.Type.Storage");
+			FGameplayTagContainer tags;
+			tags.AddTag(tag);
+			if(unit->UnitTags.HasAny(tags))
+			{
+				return;
+			}
+			
 			FName unitKey = unit->UnitKey;
-			ClearUnit(unit);
+			ClearUnit(Cell->Grid, unit);
 
 			//restart the transaction with the unit we just removed
 			int32 inventoryIdx = 0;
@@ -455,7 +458,7 @@ void UUserProfile::HandleGridInteract(AGridCellActor* Cell)
 			}
 			StartTransaction(inventoryIdx);
 
-			Grid->RefreshUnitBonuses();
+			Cell->Grid->RefreshUnitBonuses();
 			Cell->RefreshHighlight();
 		}
 	}

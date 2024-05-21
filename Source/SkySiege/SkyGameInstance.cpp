@@ -32,56 +32,6 @@ void USkyGameInstance::Setup()
 	FString changelogPath = FPaths::ProjectContentDir();
 	changelogPath += FString(TEXT("App/changelog.txt"));
 	FFileHelper::LoadFileToString(ChangelogLabel, *changelogPath);
-
-	
-
-	//@TODO move this stuff to the GameMode
-	// Session Rules. Create new rules for each difficulty settings
-	// for(int32 diff = 0; diff < cfg->DifficultySettings.Num(); ++diff)
-	// {
-	// 	USessionRules* rules = NewObject<USessionRules>(this);
-	// 	check(!SessionRules.Contains(diff));
-	// 	SessionRules.Add(diff, rules);
-	// 	
-	// 	// Setup Normal Session Rules
-	// 	rules->WinsRequired = cfg->WinsRequired;
-	// 	rules->LosesAllowed = cfg->LosesAllowed;
-	// 	rules->GridClass = cfg->GridClass;
-	// 	rules->LevelSettings = cfg->DifficultySettings[diff].LevelSettings;
-	// 	rules->StartingWalletAmount = cfg->StartingWalletAmount;
-	// 	rules->StartingInventory = cfg->StartingInventory;
-	//
-	// 	// shops
-	// 	rules->ShopRerollCost = cfg->ShopRerollCost;
-	// 	//rules->ShopRerollCurrency = cfg->ShopRerollCurrency;
-	// 	rules->ShopPools = cfg->ShopPools;
-	// 	rules->BattleDisplayClass = cfg->BattleDisplayClass; //@CLEAN
-	// 	
-	// 	// setup Mine unit keys
-	// 	rules->UnitTemplateBlueprints.Empty();
-	// 	if(cfg->UnitTemplates)
-	// 	{
-	// 		for (auto& it : cfg->UnitTemplates->GetRowMap())
-	// 		{
-	// 			FUnitTemplateDataTable* row = (FUnitTemplateDataTable*)(it.Value);
-	// 			check(!rules->UnitTemplateBlueprints.Contains(it.Key));
-	// 			FUnitTemplateBlueprint unitBP;
-	// 			unitBP.UnitKey = it.Key;
-	// 			unitBP.TooltipName = row->TooltipName;
-	// 			unitBP.ShopCost = row->ShopCost;
-	// 			unitBP.ShopWeight = row->ShopWeight;
-	// 			unitBP.BlueprintClass = row->UnitBlueprint;
-	// 			unitBP.GridShape = row->GridShape;
-	// 			unitBP.UnitTags = row->UnitTags;
-	// 			unitBP.TagsRequiredToBuild = row->TagsRequiredToBuild;
-	// 			unitBP.TagsBlockingBuild = row->TagsBlockingBuild;
-	// 			unitBP.UnitStats = row->UnitStats;
-	// 			unitBP.BonusConfig = row->BonusConfig;
-	// 			unitBP.Icon = row->Icon;
-	// 			rules->UnitTemplateBlueprints.Add(it.Key, unitBP);
-	// 		}
-	// 	}
-	// }
 }
 
 void USkyGameInstance::SessionSetup()

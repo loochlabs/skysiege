@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SkyGrid.h"
 #include "UObject/NoExportTypes.h"
 #include "UserProfile.generated.h"
 
@@ -58,12 +59,12 @@ struct FUserProfileConfig
 		unit.Col = Col;
 		StartingUnits.Add(unit);
 	}
+
+	FGridConfig GridConfig;
+	FGridConfig GridStorageConfig;
 	
-	FVector GridLocation = FVector::ZeroVector;
-	FRotator GridRotation = FRotator::ZeroRotator;
-	int32 GridRows = 6;
-	int32 GridCols = 8;
-	int32 GridPadding = 0;
+	bool bSpawnStorage = false;
+	
 	TArray<FUnitBuildTemplate> StartingUnits;	
 };
 
@@ -152,15 +153,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TransactionRotate(bool bRotateCW);
 
-	bool ConfirmTransaction(int32 Row, int32 Col);
+	bool ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col);
 
 	UFUNCTION(BlueprintCallable)
 	void EndTransaction();
 	
 	AGridUnitActor* CreateUnit(const FName& InUnitKey);
-	bool PlaceUnit(const FName& UnitKey, int32 Row, int32 Col);
-	bool PlaceUnit(AGridUnitActor* UnitActor, int32 Row, int32 Col);
-	void ClearUnit(AGridUnitActor* Unit);
+	bool PlaceUnit(ASkyGrid* Grid, const FName& UnitKey, int32 Row, int32 Col);
+	bool PlaceUnit(ASkyGrid* Grid, AGridUnitActor* UnitActor, int32 Row, int32 Col);
+	void ClearUnit(ASkyGrid* Grid, AGridUnitActor* Unit);
 	
 	const FName& GetUnitKeyFromInventory(int32 InventoryIndex);
 	const FName& GetTransactionUnitKey();
@@ -182,7 +183,14 @@ public:
 	int32 CurrentLoses = 0;
 	
 	UPROPERTY()
-	ASkyGrid* Grid = nullptr;
+	ASkyGrid* GridMain = nullptr;
+
+	//@TODO
+	//UPROPERTY()
+	//ASkyGrid* ShopGrid = nullptr;
+
+	UPROPERTY()
+	ASkyGrid* GridStorage = nullptr;
 
 	UPROPERTY(SaveGame, BlueprintReadWrite)
 	int32 Wallet;
@@ -201,9 +209,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	FTransactionData ActiveTransaction;
-
-	//@CLEAN
-	//int32 CellUnitSelection = 0;
 
 	UPROPERTY(BlueprintAssignable)
 	FProfileUpdatedShopDelegate OnUpdatedShop;

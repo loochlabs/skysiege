@@ -5,23 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 
-//#include "RulesConfig.h"
-//#include "SessionManager.h"
-//#include "Http.h" @CLEAN
-///#include "SettingsSaveGame.h"
-///#include "CareerSaveGame.h"
-///#include "SessionSaveGame.h"
-
 #include "SkyGameInstance.generated.h"
-
-//class USessionManager;
-
-//class URulesConfig;
-//struct FUnitTemplate;
-//class AGridUnitActor;
-//class USessionRules;
-//class USoundCue; @CLEAN
-//class AMusicManager;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSessionStartDelegate);
@@ -46,15 +30,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void SessionClear();
-	
-	//USessionRules* GetRules();
-
-	//@TODO
-	//UFUNCTION(BlueprintCallable) void SetAudio_Master(float value);
-	//UFUNCTION(BlueprintCallable) void SetAudio_Music(float value);
-	//UFUNCTION(BlueprintCallable) void SetAudio_UI(float value);
-	//UFUNCTION(BlueprintCallable) void SetAudio_Environment(float value);
-	//UFUNCTION(BlueprintCallable) void SetFOV(float value);
 
 	UFUNCTION(BlueprintCallable)
 	static bool IsDebugMode() { return DebugMode; }

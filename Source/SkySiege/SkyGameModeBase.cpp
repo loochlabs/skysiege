@@ -18,7 +18,6 @@ ASkyGameMode* ASkyGameMode::Get(const UObject* WorldContext)
 	return Cast<ASkyGameMode>(UGameplayStatics::GetGameMode(WorldContext));
 }
 
-
 void ASkyGameMode::BeginPlay()
 {
 	Super::BeginPlay();
@@ -46,7 +45,9 @@ void ASkyGameMode::StartGame()
 	check(!IsValid(UserProfile));
 	UserProfile = NewObject<UUserProfile>(this);
 	FUserProfileConfig profileCfg;
-	profileCfg.GridPadding = 15;
+	profileCfg.GridConfig = Config.GridConfig;
+	profileCfg.GridStorageConfig = Config.GridStorageConfig;
+	profileCfg.bSpawnStorage = true; //@TODO weird bool
 	
 	// starting units
 	profileCfg.AddStartingUnit("unit_land_basic", 2, 2);
@@ -56,7 +57,7 @@ void ASkyGameMode::StartGame()
 	UserProfile->Setup(profileCfg);
 
 	//@TODO this is for camera positioning, get this out of the Grid
-	UserProfile->Grid->SetViewToMacro();
+	UserProfile->GridMain->SetViewToMacro();
 
 	StartPhase(ESessionPhase::Shop);
 }
@@ -81,7 +82,7 @@ void ASkyGameMode::StartPhase(ESessionPhase InPhase)
 		// check new day tags
 		FGameplayTag tagExercising = FGameplayTag::RequestGameplayTag("Unit.Status.Exercising");
 		FGameplayTag tagStrong = FGameplayTag::RequestGameplayTag("Unit.Bonus.Strong");
-		for(auto& cellPair : UserProfile->Grid->Cells)
+		for(auto& cellPair : UserProfile->GridMain->Cells)
 		{
 			for(auto& unit : cellPair.Value->UnitActors)
 			{
@@ -111,7 +112,7 @@ void ASkyGameMode::StartBattleSim()
 	{
 		// get all units in local user profile
 		TMap<int32, AGridUnitActor*> unitActors;
-		for(auto& cellPair : Profile->Grid->Cells)
+		for(auto& cellPair : Profile->GridMain->Cells)
 		{
 			AGridCellActor* cell = cellPair.Value;
 			for(auto& unitActor : cell->UnitActors)
@@ -150,8 +151,8 @@ void ASkyGameMode::StartBattleSim()
 	// build mock profiles
 	EnemyProfile = NewObject<UUserProfile>(this);
 	FUserProfileConfig profileCfg;
-	profileCfg.GridLocation = FVector(-500, 1400, 10);
-	profileCfg.GridRotation = FRotator(0, 180.f, 0);
+	profileCfg.GridConfig.WorldLocation = FVector(-500, 1400, 10);
+	profileCfg.GridConfig.WorldRotation = FRotator(0, 180.f, 0);
 	profileCfg.AddStartingUnit("unit_land_basic", 0, 0);
 	profileCfg.AddStartingUnit("unit_land_basic", 2, 0);
 	profileCfg.AddStartingUnit("unit_land_basic", 4, 0);

@@ -11,6 +11,42 @@ class AGridUnitActor;
 class AGridCellActor;
 struct FCoordinates;
 
+UENUM(BlueprintType)
+enum class EGridType : uint8
+{
+	Main = 0,
+	Storage,
+	Shop,
+};
+
+
+USTRUCT(BlueprintType)
+struct FGridConfig
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
+	TSubclassOf<class ASkyGrid> GridClass = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EGridType Type = EGridType::Main;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Rows = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Cols = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 CellPadding = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector WorldLocation = FVector::ZeroVector;;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FRotator WorldRotation = FRotator::ZeroRotator;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGridFocusedDelegate, AGridCellActor*, Cell);
 
 UCLASS()
@@ -20,6 +56,7 @@ class SKYSIEGE_API ASkyGrid : public AActor
 	
 public:	
 
+	void Setup(const FGridConfig& InGridConfig);
 	void Teardown();
 	
 	UFUNCTION(BlueprintImplementableEvent)
@@ -64,6 +101,8 @@ public:
 	bool PlaceUnit(AGridUnitActor* Unit, int32 Row, int32 Col);
 	void RefreshUnitBonuses();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EGridType Type = EGridType::Main;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGridCellActor> CellClass; 
