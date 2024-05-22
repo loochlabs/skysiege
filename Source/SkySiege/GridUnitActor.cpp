@@ -24,6 +24,15 @@ void AGridUnitActor::Setup(const FName& InUnitKey)
 	OnSetupComplete();
 }
 
+void AGridUnitActor::Teardown()
+{
+	OriginGridCell->RemoveUnit(this);
+	OriginGridCell->Grid->RefreshUnitBonuses();
+	OriginGridCell->Grid->RefreshHighlights();
+	OriginGridCell = nullptr;
+	Destroy();
+}
+
 void AGridUnitActor::BeginDestroy()
 {
 	OriginGridCell = nullptr;
@@ -33,6 +42,12 @@ void AGridUnitActor::BeginDestroy()
 const FUnitTemplate& AGridUnitActor::GetTemplate()
 {
 	return ASkyGameMode::Get(this)->GetUnitTemplate(UnitKey);
+}
+
+int32 AGridUnitActor::GetSellPrice()
+{
+	auto& unitTemplate = GetTemplate();
+	return unitTemplate.ShopCost / 2 + 1;
 }
 
 void AGridUnitActor::RefreshLocation()

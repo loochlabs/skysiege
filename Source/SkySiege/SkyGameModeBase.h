@@ -47,6 +47,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	ESessionPhase Phase = ESessionPhase::None;	
 
+	UPROPERTY(BlueprintReadOnly)
+	AActor* ShopActor = nullptr;
+	
 	UPROPERTY(BlueprintAssignable)
 	FSkyUpdatedPhaseDelegate OnUpdatedPhase;
 };

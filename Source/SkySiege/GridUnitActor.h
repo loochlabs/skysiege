@@ -23,7 +23,8 @@ class SKYSIEGE_API AGridUnitActor : public AActor
 public:
 
 	virtual void Setup(const FName& InUnitKey);
-
+	void Teardown();
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnSetupComplete();
 	
@@ -31,6 +32,9 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	const FUnitTemplate& GetTemplate();
+
+	UFUNCTION(BlueprintPure)
+	int32 GetSellPrice();
 
 	void RefreshLocation();
 	void SetOriginCell(AGridCellActor* Cell);

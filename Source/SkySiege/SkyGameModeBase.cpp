@@ -59,6 +59,13 @@ void ASkyGameMode::StartGame()
 	//@TODO this is for camera positioning, get this out of the Grid
 	UserProfile->GridMain->SetViewToMacro();
 
+	check(ShopActor == nullptr);
+	check(Config.ShopSellClass);
+	UWorld* world = GetWorld();
+	ShopActor = world->SpawnActor<AActor>(Config.ShopSellClass);
+	check(ShopActor);
+	ShopActor->SetActorLocation(Config.ShopSellLocation);
+
 	StartPhase(ESessionPhase::Shop);
 }
 
@@ -91,10 +98,13 @@ void ASkyGameMode::StartPhase(ESessionPhase InPhase)
 			}
 		}
 	}
+
+		ShopActor->SetActorHiddenInGame(false);
 		
 		break;
 	
 	case ESessionPhase::Battle:
+		ShopActor->SetActorHiddenInGame(true);
 		StartBattleSim();
 		break;
 	

@@ -40,13 +40,19 @@ struct FSessionConfig
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Rules")
 	int32 LosesAllowed = 3;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Rules")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
 	int32 StartingWalletAmount = 10;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Rules")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
 	int32 ShopRerollCost = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Rules")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
 	TArray<FGameplayTag> ShopPoolTags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
+	TSubclassOf<AActor> ShopSellClass = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
+	FVector ShopSellLocation = FVector::ZeroVector;
 };
 

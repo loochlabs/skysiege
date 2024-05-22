@@ -205,6 +205,24 @@ void UUserProfile::ConfirmShopPurchase(int32 OptionIndex)
 	StartTransaction(unit);
 }
 
+int32 UUserProfile::GetTransactionSellPrice()
+{
+	return IsTransactionActive() ? ActiveTransaction.UnitActor->GetSellPrice() : 0;
+}
+
+int32 UUserProfile::TryToSell()
+{
+	if(!IsTransactionActive())
+		return 0;
+
+	int32 sellPrice = GetTransactionSellPrice();
+	UpdateWallet(sellPrice);
+	ActiveTransaction.UnitActor->Teardown();
+	ActiveTransaction.Reset();
+	OnUpdatedTransaction.Broadcast();
+	return sellPrice;
+}
+
 void UUserProfile::TryToCancel()
 {
 	if(IsTransactionActive())
@@ -321,6 +339,7 @@ void UUserProfile::StartTransaction(AGridUnitActor* Unit)
 	ClearUnit(Unit);
 	Unit->OriginGridCell->Grid->RefreshUnitBonuses();
 	Unit->OriginGridCell->RefreshHighlight();
+	OnUpdatedTransaction.Broadcast();
 }
 
 bool UUserProfile::ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col)
@@ -358,6 +377,10 @@ void UUserProfile::CancelTransaction()
 	cell->Grid->PlaceUnit(unit, cell->Row, cell->Col);
 
 	GridMain->RefreshHighlights();
+	GridMain->RefreshUnitBonuses();
+	GridStorage->RefreshHighlights();
+	GridStorage->RefreshUnitBonuses();
+	
 	OnUpdatedTransaction.Broadcast();
 }
 

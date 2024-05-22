@@ -20,7 +20,6 @@ enum class ESessionPhase : uint8;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedShopDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedWalletDelegate);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUpdatedUnitInventoryDelegate); @CLEAN
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileTransactionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProfileUnitCreatedDelegate);
 
@@ -83,12 +82,10 @@ struct FTransactionData
 
 	void Reset()
 	{
-		//InvIndex = -1; @CLEAN
 		Active = false;
 		UnitActor = nullptr;
 	};
 
-	//int32 InvIndex = -1;
 	bool Active = false;
 	AGridUnitActor* UnitActor = nullptr;
 	AGridCellActor* OriginalCell = nullptr;
@@ -127,6 +124,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ConfirmShopPurchase(int32 OptionIndex);
 
+	UFUNCTION(BlueprintPure)
+	int32 GetTransactionSellPrice();
+	
+	UFUNCTION(BlueprintCallable)
+	int32 TryToSell();
+
 	UFUNCTION(BlueprintCallable)
 	void TryToCancel();
 	
@@ -139,7 +142,9 @@ public:
 	void ClearUnit(AGridUnitActor* Unit);
 	void MoveUnit(AGridUnitActor* Unit, ASkyGrid* DestGrid);
 
+	UFUNCTION(BlueprintPure)
 	bool IsTransactionActive();
+	
 	void StartTransaction(AGridUnitActor* Unit);
 	bool ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col);
 	void TransactionRotate(bool bRotateCW);
