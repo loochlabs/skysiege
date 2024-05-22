@@ -35,12 +35,17 @@ const FUnitTemplate& AGridUnitActor::GetTemplate()
 	return ASkyGameMode::Get(this)->GetUnitTemplate(UnitKey);
 }
 
+void AGridUnitActor::RefreshLocation()
+{
+	FVector loc = OriginGridCell->GetUnitAnchorLocation();
+	SetActorLocation(loc);
+}
+
 void AGridUnitActor::SetOriginCell(AGridCellActor* Cell)
 {
 	check(Cell);
 	OriginGridCell = Cell;
-	FVector loc = Cell->GetUnitAnchorLocation();
-	SetActorLocation(loc);
+	RefreshLocation();
 }
 
 void AGridUnitActor::Rotate(bool CW)

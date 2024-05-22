@@ -70,6 +70,8 @@ public:
 	void InsertUnit(AGridUnitActor* Unit);
 	void RemoveUnit(AGridUnitActor* Unit);
 
+	void RefreshLocation();
+
 	UPROPERTY(BlueprintReadWrite)
 	int32 Row = -1;
 	

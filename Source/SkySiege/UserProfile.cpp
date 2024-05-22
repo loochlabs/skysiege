@@ -54,10 +54,17 @@ void UUserProfile::Setup(const FUserProfileConfig& InConfig)
 
 void UUserProfile::Teardown()
 {
-	GridMain->Teardown();
-	GridMain = nullptr;
-	GridStorage->Teardown();
-    GridStorage = nullptr;
+	if(IsValid(GridMain))
+	{
+		GridMain->Teardown();
+		GridMain = nullptr;	
+	}
+
+	if(IsValid(GridStorage))
+	{
+		GridStorage->Teardown();
+		GridStorage = nullptr;
+	}
 }
 
 void UUserProfile::StartPhase(ESessionPhase Phase)
@@ -70,12 +77,14 @@ void UUserProfile::StartPhase(ESessionPhase Phase)
 			auto& cfg = GetConfig();
 			UpdateWallet(cfg.StartingWalletAmount);
 			ResetShopOptions();
-			
+
+			GridStorage->ResetLocationAndRotation();
 		}
 		
 		break;
 
 	case ESessionPhase::Battle:
+		GridStorage->MoveOffscreen();
 		break;
 
 	default:
@@ -189,6 +198,11 @@ void UUserProfile::ConfirmShopPurchase(int32 OptionIndex)
 	
 	CurrentShopOptions[OptionIndex].Purchased = true;
 	UpdateWallet(-CurrentShopOptions[OptionIndex].Cost);
+
+	AGridUnitActor* unit = CreateUnit(CurrentShopOptions[OptionIndex].UnitKey);
+	AGridCellActor* cell = GridStorage->FindValidCell(unit);
+	PlaceUnit(GridStorage, unit, cell->Row, cell->Col);
+	StartTransaction(unit);
 }
 
 void UUserProfile::TryToCancel()

@@ -58,6 +58,9 @@ public:
 
 	void Setup(const FGridConfig& InGridConfig);
 	void Teardown();
+	void RefreshCellTransforms();
+	void ResetLocationAndRotation();
+	void MoveOffscreen();
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetupBP();
@@ -119,4 +122,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FGridFocusedDelegate OnInteract;
+
+private:
+	FVector OriginalLocation;
+	FRotator OriginalRotation;
 };

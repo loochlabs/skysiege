@@ -28,14 +28,6 @@ struct FSessionConfig
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
 	FGridConfig GridShopConfig;
 
-	//@CLEAN
-	//
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
-	// TSubclassOf<ASkyGrid> GridClass = nullptr;
-	//
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Grid")
-	// TSubclassOf<ASkyGrid> GridStorageClass = nullptr;
-	//
 	UPROPERTY(EditAnywhere, Category="Unit Data")
 	UDataTable* UnitTemplateData = nullptr;
 	

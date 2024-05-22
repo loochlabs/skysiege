@@ -126,3 +126,10 @@ void AGridCellActor::RemoveUnit(AGridUnitActor* Unit)
 	UnitActors.Remove(Unit);
 }
 
+void AGridCellActor::RefreshLocation()
+{
+	for(auto& unit : UnitActors)
+	{
+		unit->RefreshLocation();
+	}
+}

@@ -32,6 +32,7 @@ public:
 	UFUNCTION(BlueprintPure)
 	const FUnitTemplate& GetTemplate();
 
+	void RefreshLocation();
 	void SetOriginCell(AGridCellActor* Cell);
 	void Rotate(bool CW = true);
 	void RotateTo(ECellOrientation InOrientation);

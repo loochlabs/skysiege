@@ -11,8 +11,9 @@
 void ASkyGrid::Setup(const FGridConfig& InGridConfig)
 {
 	Type = InGridConfig.Type;
-	SetActorLocation(InGridConfig.WorldLocation);
-	SetActorRotation(InGridConfig.WorldRotation);
+	OriginalLocation = InGridConfig.WorldLocation;
+	OriginalRotation = InGridConfig.WorldRotation;
+	ResetLocationAndRotation();
 
 	// hard coding grid spawning
 	for(int32 c = 0; c < InGridConfig.Cols; ++c)
@@ -46,6 +47,28 @@ void ASkyGrid::Teardown()
 	}
 	Cells.Empty();
 	Destroy();
+}
+
+void ASkyGrid::RefreshCellTransforms()
+{
+	for(auto& cell : Cells)
+	{
+		cell.Value->RefreshLocation();
+	}
+}
+
+void ASkyGrid::ResetLocationAndRotation()
+{
+	SetActorLocation(OriginalLocation);
+	SetActorRotation(OriginalRotation);
+	RefreshCellTransforms();
+}
+
+void ASkyGrid::MoveOffscreen()
+{
+	static FVector offscreenLoc = FVector(-10000, -10000, 0); 
+	SetActorLocation(offscreenLoc);
+	RefreshCellTransforms();
 }
 
 void ASkyGrid::SetViewToMacro()

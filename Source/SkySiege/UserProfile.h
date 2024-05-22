@@ -69,20 +69,6 @@ struct FUserProfileConfig
 	TArray<FUnitBuildTemplate> StartingUnits;	
 };
 
-
-//@CLEAN
-// USTRUCT(BlueprintType)
-// struct FInventoryUnit
-// {
-// 	GENERATED_BODY()
-// 	
-// 	UPROPERTY(BlueprintReadWrite)
-// 	FName UnitKey;
-//
-// 	UPROPERTY(BlueprintReadWrite)
-// 	int32 Count = 0;
-// };
-
 enum class ETransactionState : uint8
 {
 	None = 0,

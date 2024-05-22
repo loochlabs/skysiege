@@ -151,8 +151,10 @@ void ASkyGameMode::StartBattleSim()
 	// build mock profiles
 	EnemyProfile = NewObject<UUserProfile>(this);
 	FUserProfileConfig profileCfg;
-	profileCfg.GridConfig.WorldLocation = FVector(-500, 1400, 10);
-	profileCfg.GridConfig.WorldRotation = FRotator(0, 180.f, 0);
+	profileCfg.GridConfig = Config.GridConfig;
+	profileCfg.GridConfig.CellPadding = 0;
+	profileCfg.GridConfig.WorldLocation = FVector(-1500, 0, 10);
+	profileCfg.GridConfig.WorldRotation = FRotator(0, 0, 0);
 	profileCfg.AddStartingUnit("unit_land_basic", 0, 0);
 	profileCfg.AddStartingUnit("unit_land_basic", 2, 0);
 	profileCfg.AddStartingUnit("unit_land_basic", 4, 0);
