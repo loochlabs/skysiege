@@ -264,6 +264,7 @@ void ASkyGrid::RefreshUnitBonuses()
 	//apply bonuses
 	for(auto& unit : units)
 	{
+		// apply this unit's bonuses to units in grid shape
 		auto& unitBP = unit->GetTemplate();
 		for(auto& bonusCfg : unitBP.BonusConfig)
 		{
@@ -279,5 +280,11 @@ void ASkyGrid::RefreshUnitBonuses()
 				}
 			}
 		}
+	}
+
+	// refresh upgrades
+	for(auto& unit : units)
+	{
+		
 	}
 }

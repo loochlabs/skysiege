@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CellOrientation.h"
 #include "GameplayTagContainer.h"
+#include "UnitStats.h"
 #include "GameFramework/Actor.h"
 #include "GridUnitActor.generated.h"
 
@@ -32,6 +33,9 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	const FUnitTemplate& GetTemplate();
+
+	UFUNCTION(BlueprintPure)
+	const FUnitStats& GetStats();
 
 	UFUNCTION(BlueprintPure)
 	int32 GetSellPrice();

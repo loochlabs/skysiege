@@ -7,6 +7,7 @@
 #include "SessionConfig.generated.h"
 
 
+struct FUnitTagUpgrade;
 struct FGameplayTag;
 struct FUnitTemplate;
 class ASkyGrid;
@@ -33,6 +34,9 @@ struct FSessionConfig
 	
 	UPROPERTY(BlueprintReadWrite, Category="Unit Data")
 	TMap<FName, FUnitTemplate> UnitTemplates;
+
+	UPROPERTY(BlueprintReadWrite, Category="Unit Data")
+	TArray<FUnitTagUpgrade> UnitUpdates;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Rules")
 	int32 WinsRequired = 5;

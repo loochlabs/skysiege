@@ -44,6 +44,15 @@ const FUnitTemplate& AGridUnitActor::GetTemplate()
 	return ASkyGameMode::Get(this)->GetUnitTemplate(UnitKey);
 }
 
+const FUnitStats& AGridUnitActor::GetStats()
+{
+	auto& unitTemplate = GetTemplate();
+
+	//@TODO need to dynamically calculate our stats from tags and bonuses.
+	
+	return unitTemplate.UnitStats;
+}
+
 int32 AGridUnitActor::GetSellPrice()
 {
 	auto& unitTemplate = GetTemplate();
