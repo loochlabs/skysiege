@@ -143,37 +143,6 @@ AGridCellActor* ASkyGrid::FindValidCell(AGridUnitActor* Unit)
 	return nullptr;
 }
 
-bool ASkyGrid::IsGridUnitEmpty(int32 row, int32 col)
-{
-	AGridCellActor* cell = GetCell(row, col);
-	return cell->UnitActors.IsEmpty();
-}
-
-bool ASkyGrid::GetRandomEmptyCell(int32& outR, int32& outC)
-{
-	// Get cells, shuffling
-	TArray<AGridCellActor*> cells;
-	Cells.GenerateValueArray(cells);
-	for(int32 idx = 0; idx < cells.Num(); ++idx)
-	{
-		int32 rng = FMath::Rand() % cells.Num();
-		auto& temp = cells[idx];
-		cells[idx] = cells[rng];
-		cells[rng] = temp;
-	}
-
-	for(auto& cell : cells)
-	{
-		if(IsGridUnitEmpty(cell->Row, cell->Col))
-		{
-			outR = cell->Row;
-			outC = cell->Col;
-			return true;
-		}
-	}
-	return false;
-}
-
 void ASkyGrid::SetFocus(int32 Row, int32 Col)
 {
 	Focus.Row = Row;
@@ -285,6 +254,25 @@ void ASkyGrid::RefreshUnitBonuses()
 	// refresh upgrades
 	for(auto& unit : units)
 	{
-		
+		unit->RefreshTagUpgrades();
 	}
+}
+
+void ASkyGrid::UpgradeUnits()
+{
+	TArray<AGridUnitActor*> units;
+	for(auto& cellPair : Cells)
+	{
+		for(auto& unit : cellPair.Value->UnitActors)
+		{
+			units.AddUnique(unit);
+		}
+	}
+	
+	for(auto& unit : units)
+	{
+		unit->UpgradeTags();
+	}
+
+	RefreshUnitBonuses();
 }

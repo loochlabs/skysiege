@@ -89,13 +89,6 @@ public:
 
 	void GetCellShape(TArray<AGridCellActor*>& Out, int32 Row, int32 Col, const TArray<FCoordinates>& Shape);
 	AGridCellActor* FindValidCell(AGridUnitActor* Unit);
-	
-	UFUNCTION(BlueprintCallable)
-	bool IsGridUnitEmpty(int32 row, int32 col);
-
-	UFUNCTION(BlueprintCallable)
-	bool GetRandomEmptyCell(int32& row, int32& col);
-
 	void SetFocus(int32 Row, int32 Col);
 	void CycleFocus();
 	void Interact(int32 Row, int32 Col);
@@ -104,7 +97,8 @@ public:
 
 	bool PlaceUnit(AGridUnitActor* Unit, int32 Row, int32 Col);
 	void RefreshUnitBonuses();
-
+	void UpgradeUnits();
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EGridType Type = EGridType::Main;
 	

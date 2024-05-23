@@ -79,6 +79,9 @@ void UUserProfile::StartPhase(ESessionPhase Phase)
 			ResetShopOptions();
 
 			GridStorage->ResetLocationAndRotation();
+
+			// process upgrade tags
+			GridMain->UpgradeUnits();
 		}
 		
 		break;
@@ -272,8 +275,9 @@ void UUserProfile::ClearUnit(AGridUnitActor* Unit)
 	ASkyGrid* grid = Unit->OriginGridCell->Grid;
 	int32 row = Unit->OriginGridCell->Row;
 	int32 col = Unit->OriginGridCell->Col;
-	auto& unitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(Unit->UnitKey);
 
+	// remove this unit's bonuses
+	auto& unitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(Unit->UnitKey);
 	for(auto& bonusCfg : unitTemplate.BonusConfig)
 	{
 		auto buffCoords = Unit->GetOrientedCoords(bonusCfg.Coords);

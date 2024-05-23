@@ -16,5 +16,8 @@ struct FUnitTagUpgrade
 	FGameplayTagContainer RequiredTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTagContainer BlockingTags;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTagContainer UpgradeTags;
 };

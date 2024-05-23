@@ -35,8 +35,8 @@ struct FSessionConfig
 	UPROPERTY(BlueprintReadWrite, Category="Unit Data")
 	TMap<FName, FUnitTemplate> UnitTemplates;
 
-	UPROPERTY(BlueprintReadWrite, Category="Unit Data")
-	TArray<FUnitTagUpgrade> UnitUpdates;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Unit Data")
+	TArray<FUnitTagUpgrade> UnitUpgrades;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Rules")
 	int32 WinsRequired = 5;

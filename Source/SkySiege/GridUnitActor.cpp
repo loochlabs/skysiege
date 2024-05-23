@@ -137,9 +137,6 @@ TArray<FCoordinates> AGridUnitActor::GetOrientedShape()
 	return GetOrientedCoords(unitTemplate.GridShape);
 }
 
-
-
-
 void AGridUnitActor::SetFocus(bool bFocused)
 {
 	OnUpdatedFocus(bFocused);
@@ -148,4 +145,30 @@ void AGridUnitActor::SetFocus(bool bFocused)
 void AGridUnitActor::HandleBattleEvent(const FBattleEvent& Event)
 {
 	OnBattleEvent(Event);
+}
+
+void AGridUnitActor::RefreshTagUpgrades()
+{
+	PendingUpgrades.Empty();
+	auto& cfg = ASkyGameMode::Get(this)->Config;
+	FGameplayTagContainer tags = UnitTags; 
+	for(auto& upgrade : cfg.UnitUpgrades)
+	{
+		if(tags.HasAllExact(upgrade.RequiredTags) && !tags.HasAny(upgrade.BlockingTags))
+		{
+			PendingUpgrades.Add(upgrade);
+			tags.RemoveTags(upgrade.RequiredTags);
+		}
+	}
+}
+
+void AGridUnitActor::UpgradeTags()
+{
+	for(auto& upgrade : PendingUpgrades)
+	{
+		check(UnitTags.HasAllExact(upgrade.RequiredTags));
+		check(!UnitTags.HasAny(upgrade.BlockingTags));
+		UnitTags.RemoveTags(upgrade.RequiredTags);
+		UnitTags.AppendTags(upgrade.UpgradeTags);
+	}
 }

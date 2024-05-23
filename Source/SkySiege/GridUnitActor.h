@@ -6,6 +6,7 @@
 #include "CellOrientation.h"
 #include "GameplayTagContainer.h"
 #include "UnitStats.h"
+#include "UnitTagUpgrade.h"
 #include "GameFramework/Actor.h"
 #include "GridUnitActor.generated.h"
 
@@ -61,6 +62,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnBattleEvent(const FBattleEvent& Event);
 
+	void RefreshTagUpgrades();
+	void UpgradeTags();
+	
 	UPROPERTY(BlueprintReadWrite)
 	FName UnitKey;
 	
@@ -75,5 +79,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	ECellOrientation GridOrientation = ECellOrientation::North;
+
+	UPROPERTY(BlueprintReadWrite)
+	TArray<FUnitTagUpgrade> PendingUpgrades;
 };
 
