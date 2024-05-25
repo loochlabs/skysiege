@@ -365,17 +365,18 @@ void FBattleSimulation::FillTags()
 	add_status("Unit.Status.Bulky", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
 		Unit.Stats.Power *= 3.f;
+		Unit.Stats.Cost *= 2.0f;
 	},
 	"<HighlightGreen>[Bulky]</>",
-	"+200% action output.");
+	"+200% action output. +200% consumption");
 	
 	add_status("Unit.Status.MeatHead", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
 		Unit.Stats.Power *= 5.f;
-		Unit.Stats.Competence *= 0.8f;
+		Unit.Stats.Cost *= 5.0f;
 	},
 	"<HighlightGreen>[Meat Head]</>",
-	"+400% action output. -20% {Competence}");
+	"+400% action output. +400% consumption");
 	
 	add_status("Unit.Status.Burning", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
@@ -419,6 +420,35 @@ void FBattleSimulation::FillTags()
 	},
 	"<HighlightGreen>[Glutton]</>",
 	"-100% consumption. +200% {Cooldown}");
+
+	// Elements
+	add_status("Unit.Element.Fire", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Competence *= 0.9f;
+	},
+	"<HighlightGreen>[Hot]</>",
+	"-10% {Competence}");
+
+	add_status("Unit.Element.Ice", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Cooldown *= 1.1f;
+	},
+	"<HighlightGreen>[Cold]</>",
+	"+10% {Cooldown}");
+	
+	add_status("Unit.Element.Nature", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Power *= 0.9f;
+	},
+	"<HighlightGreen>[Relaxed]</>",
+	"-10% {Power}");
+
+	add_status("Unit.Element.Death", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Cost *= 1.1f;
+	},
+	"<HighlightGreen>[Sick]</>",
+	"+10% consumption");
 	
 
 	// Jobs
@@ -441,5 +471,5 @@ void FBattleSimulation::FillTags()
 		Sim.GetProfile(Unit.Owner).AddHP(Sim, Unit.UnitID, Unit.Stats.Power);
 	},
 	"<HighlightOrange>[Engineer]</>",
-	"Repair {StatPower} {HP} every {StatCooldown} sec. Eat {StatCost} {Food}.");
+	"Repair {StatPower} {Health} every {StatCooldown} sec. Eat {StatCost} {Food}.");
 }
