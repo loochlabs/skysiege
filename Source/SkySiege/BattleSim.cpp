@@ -11,13 +11,22 @@ void FBattleUnit::Start(FBattleSimulation& Sim)
 {
 	StartTime = FMath::Rand() % 500;
 
+	// do bonuses, statuses
+	TArray<FGameplayTag> tagStatuses;
+	Tags.GetGameplayTagArray(tagStatuses);
+	for(const FGameplayTag& tag : tagStatuses)
+	{
+		if(Sim.TagStatus.Contains(tag))
+			Sim.TagStatus[tag].Behavior(*this, Sim);
+	}
+	
 	// do start actions, bonuses, statuses
 	TArray<FGameplayTag> tags;
 	Tags.GetGameplayTagArray(tags);
 	for(const FGameplayTag& tag : tags)
 	{
 		if(Sim.TagStartActions.Contains(tag))
-			Sim.TagStartActions[tag](*this, Sim);
+			Sim.TagStartActions[tag].Behavior(*this, Sim);
 	}
 }
 
@@ -55,7 +64,7 @@ EBattleUnitStepResult FBattleUnit::Step(FBattleSimulation& Sim)
 		for(const FGameplayTag& tag : tags)
 		{
 			if(Sim.TagActions.Contains(tag))
-				Sim.TagActions[tag](*this, Sim);
+				Sim.TagActions[tag].Behavior(*this, Sim);
 		}
 
 		return EBattleUnitStepResult::ActionSuccess;
@@ -64,37 +73,6 @@ EBattleUnitStepResult FBattleUnit::Step(FBattleSimulation& Sim)
 	Sim.AddEvent(EBattleEventID::ActionMissed, Owner, UnitID, Stats.Cost);
 	return EBattleUnitStepResult::ActionFail;
 }
-
-// void FBattleUnit::Bonus_AddPower(FBattleSimulation& Sim)
-// {
-// 	Stats.Power += 50;
-// }
-
-//@CLEAN
-// void FBattleUnit::StartAction_AddMaxHP_1000(FBattleSimulation& Sim)
-// {
-// 	Sim.GetProfile(Owner).AddMaxHP(Sim, UnitID, Stats.Power * 16);
-// }
-//
-// void FBattleUnit::StartAction_AddFood_25(FBattleSimulation& Sim)
-// {
-// 	Sim.GetProfile(Owner).AddFood(Sim, UnitID, Stats.Power); 
-// }
-
-// void FBattleUnit::Action_DamageEnemy(FBattleSimulation& Sim)
-// {
-// 	Sim.GetEnemyProfileOf(Owner).RemoveHP(Sim, UnitID, Stats.Power);
-// }
-//
-// void FBattleUnit::Action_AddFood(FBattleSimulation& Sim)
-// {
-// 	Sim.GetProfile(Owner).AddFood(Sim, UnitID, Stats.Power);
-// }
-//
-// void FBattleUnit::Action_AddHP(FBattleSimulation& Sim)
-// {
-// 	Sim.GetProfile(Owner).AddHP(Sim, UnitID, Stats.Power);
-// }
 
 //--------------------------
 //	Battle PROFILES
@@ -221,7 +199,6 @@ void FBattleSimulation::Start()
 	// Phase 0: On Start on all profile Units
 	//@DESIGN: need to make sure player profiles do not effect each other yet?
 	TimeMS = 0;
-	FillTags();
 
 	// Phase 1: Start
 	UserA.Start(*this);
@@ -274,38 +251,195 @@ void FBattleSimulation::AddEvent(EBattleEventID EventID, EBattleID ID, int32 Sou
 	FrameEvents.Add(event);
 }
 
+TMap<FGameplayTag, FBattleSimulation::FUnitBehaviorData> FBattleSimulation::TagStatus;
+TMap<FGameplayTag, FBattleSimulation::FUnitBehaviorData> FBattleSimulation::TagStartActions;
+TMap<FGameplayTag, FBattleSimulation::FUnitBehaviorData> FBattleSimulation::TagActions;
+
+FString FBattleSimulation::GetTagDescriptionRaw(const FGameplayTag& Tag)
+{
+	if(TagStatus.Contains(Tag))
+	{
+		return FString::Printf(TEXT("%s %s"), *TagStatus[Tag].Label, *TagStatus[Tag].DescriptionRaw);
+	}
+	if(TagStartActions.Contains(Tag))
+	{
+		return FString::Printf(TEXT("%s %s"), *TagStartActions[Tag].Label, *TagStartActions[Tag].DescriptionRaw);
+	}
+	if(TagActions.Contains(Tag))
+	{
+		return FString::Printf(TEXT("%s %s"), *TagActions[Tag].Label, *TagActions[Tag].DescriptionRaw);
+	}
+	return "";
+}
+
+FText FBattleSimulation::GetTagDescriptionFormatted(const FGameplayTag& Tag, const FUnitStats& Stats)
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("StatPower"), Stats.Power);
+	Args.Add(TEXT("StatCost"), Stats.Cost);
+	Args.Add(TEXT("StatCooldown"), static_cast<float>(Stats.Cooldown) / 1000.f);
+	Args.Add(TEXT("StatCompetence"), Stats.Competence);
+
+	Args.Add(TEXT("Power"), FText::FromString("<img id=\"Power\"/>"));
+	Args.Add(TEXT("Food"), FText::FromString("<img id=\"Food\"/>"));
+	Args.Add(TEXT("Cooldown"), FText::FromString("<img id=\"Cooldown\"/>"));
+	Args.Add(TEXT("Competence"), FText::FromString("<img id=\"Competence\"/>"));
+	Args.Add(TEXT("Damage"), FText::FromString("<img id=\"Damage\"/>"));
+	Args.Add(TEXT("Repair"), FText::FromString("<img id=\"Repair\"/>"));
+	Args.Add(TEXT("NoFood"), FText::FromString("<img id=\"NoFood\"/>"));
+	Args.Add(TEXT("ActionMissed"), FText::FromString("<img id=\"ActionMissed\"/>"));
+	Args.Add(TEXT("Health"), FText::FromString("<img id=\"Health\"/>"));
+	Args.Add(TEXT("Land"), FText::FromString("<img id=\"Land\"/>"));
+	Args.Add(TEXT("Building"), FText::FromString("<img id=\"Building\"/>"));
+	Args.Add(TEXT("Worker"), FText::FromString("<img id=\"Worker\"/>"));
+	Args.Add(TEXT("Storage"), FText::FromString("<img id=\"Storage\"/>"));
+
+	FString descriptionRaw = GetTagDescriptionRaw(Tag);
+	FText descRawText = FText::FromString(descriptionRaw);
+	return FText::Format(descRawText, Args);
+}
+
 void FBattleSimulation::FillTags()
 {
-	// ~~~~~ Start Actions ~~~~~
-	auto add_start_action = [&](FName&& TagName, UnitBehavior Func)
-	{
-		TagStartActions.Add(FGameplayTag::RequestGameplayTag(TagName), Func);
-	};
+	TagStatus.Empty();
+	TagStartActions.Empty();
+	TagActions.Empty();
 
-	add_start_action("Unit.StartAction.AddFood", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	// ~~~~~ Statuses ~~~~~
+	auto add_status = [&](FName&& TagName, UnitBehavior Func, FString&& Label, FString&& Description)
 	{
-		Sim.GetProfile(Unit.Owner).AddFood(Sim, Unit.UnitID, Unit.Stats.Power); 
-	} );
-
-	// ~~~~~ Actions ~~~~~
-	auto add_action = [&](FName&& TagName, UnitBehavior Func)
-	{
-		TagActions.Add(FGameplayTag::RequestGameplayTag(TagName), Func);
+		FUnitBehaviorData data;
+		data.Behavior = Func;
+		data.Label = Label;
+		data.DescriptionRaw = Description;
+		FGameplayTag tag = FGameplayTag::RequestGameplayTag(TagName);
+		TagStatus.Add(tag, data);
 	};
 	
+	// ~~~~~ Start Actions ~~~~~
+	auto add_start_action = [&](FName&& TagName, UnitBehavior Func, FString&& Label, FString&& Description)
+	{
+		FUnitBehaviorData data;
+		data.Behavior = Func;
+		data.Label = Label;
+		data.DescriptionRaw = Description;
+		FGameplayTag tag = FGameplayTag::RequestGameplayTag(TagName);
+		TagStartActions.Add(tag, data);
+	};
+	
+	// ~~~~~ Actions ~~~~~
+	auto add_action = [&](FName&& TagName, UnitBehavior Func, FString&& Label, FString&& Description)
+	{
+		FUnitBehaviorData data;
+		data.Behavior = Func;
+		data.Label = Label;
+		data.DescriptionRaw = Description;
+		FGameplayTag tag = FGameplayTag::RequestGameplayTag(TagName);
+		TagActions.Add(tag, data);
+	};
+	
+	add_start_action("Unit.StartAction.AddFood", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Sim.GetProfile(Unit.Owner).AddFood(Sim, Unit.UnitID, Unit.Stats.Power);
+	},
+	"",
+	"Add {StatPower} {Food}");
+
+
+	// -------- Statuses -----------
+
+	add_status("Unit.Status.Exercising", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Power *= 1.1f;
+	},
+	"<HighlightGreen>[Exercising]</>",
+	"+10% action output.");
+	
+	add_status("Unit.Status.Strong", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Power *= 1.5f;
+	},
+	"<HighlightGreen>[Strong]</>",
+	"+50% action output.");
+	
+	add_status("Unit.Status.Bulky", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Power *= 3.f;
+	},
+	"<HighlightGreen>[Bulky]</>",
+	"+200% action output.");
+	
+	add_status("Unit.Status.MeatHead", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Power *= 5.f;
+		Unit.Stats.Competence *= 0.8f;
+	},
+	"<HighlightGreen>[Meat Head]</>",
+	"+400% action output. -20% {Competence}");
+	
+	add_status("Unit.Status.Burning", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Power *= 0.9f;
+	},
+	"<HighlightGreen>[Burning]</>",
+	"-10% action output.");
+
+	add_status("Unit.Status.Cozy", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Power *= 1.1f;
+	},
+	"<HighlightGreen>[Cozy]</>",
+	"+10% action output");
+	
+	add_status("Unit.Status.Eating", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Cost *= 0.9f;
+	},
+	"<HighlightGreen>[Eating]</>",
+	"-10% consumption.");
+
+	add_status("Unit.Status.Fed", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Cost *= 0.75f;
+	},
+	"<HighlightGreen>[Fed]</>",
+	"-25% consumption.");
+
+	add_status("Unit.Status.Overate", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Cost *= 0.25f;
+	},
+	"<HighlightGreen>[Overate]</>",
+	"-75% consumption.");
+
+	add_status("Unit.Status.Glutton", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Cost = 0;
+		Unit.Stats.Cooldown *= 3.f;
+	},
+	"<HighlightGreen>[Glutton]</>",
+	"-100% consumption. +200% {Cooldown}");
+	
+
 	// Jobs
 	add_action("Unit.Job.Farmer", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
 		Sim.GetProfile(Unit.Owner).AddFood(Sim, Unit.UnitID, Unit.Stats.Power);
-	} );
-
+	},
+	"<HighlightOrange>[Farmer]</>",
+	"Gain {StatPower} {Food} every {StatCooldown} sec. Eat {StatCost} {Food}.");
+	
 	add_action("Unit.Job.Soldier", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
 		Sim.GetEnemyProfileOf(Unit.Owner).RemoveHP(Sim, Unit.UnitID, Unit.Stats.Power);
-	} );
+	},
+	"<HighlightOrange>[Soldier]</>",
+	"Deal {StatPower} {Damage} every {StatCooldown} sec. Eat {StatCost} {Food}.");
 
 	add_action("Unit.Job.Engineer", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
 		Sim.GetProfile(Unit.Owner).AddHP(Sim, Unit.UnitID, Unit.Stats.Power);
-	} );
+	},
+	"<HighlightOrange>[Engineer]</>",
+	"Repair {StatPower} {HP} every {StatCooldown} sec. Eat {StatCost} {Food}.");
 }

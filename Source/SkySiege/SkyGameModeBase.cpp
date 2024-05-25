@@ -22,6 +22,7 @@ void ASkyGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FBattleSimulation::FillTags();
 	Config.Setup();
 	
 	APlayerController* controller = GEngine->GetFirstLocalPlayerController(GetWorld());
@@ -84,21 +85,6 @@ void ASkyGameMode::StartPhase(ESessionPhase InPhase)
 			EnemyProfile->Teardown();
 			EnemyProfile = nullptr;
 		}
-
-		//@CLEAN 
-	//{
-	//	// check new day tags
-	//	//FGameplayTag tagExercising = FGameplayTag::RequestGameplayTag("Unit.Status.Exercising");
-	//	//FGameplayTag tagStrong = FGameplayTag::RequestGameplayTag("Unit.Bonus.Strong");
-	//	//for(auto& cellPair : UserProfile->GridMain->Cells)
-	//	//{
-	//	//	for(auto& unit : cellPair.Value->UnitActors)
-	//	//	{
-	//	//		if(unit->UnitTags.HasTag(tagExercising))
-	//	//			unit->UnitTags.AddTag(tagStrong);
-	//	//	}
-	//	//}
-	//}
 
 		ShopActor->SetActorHiddenInGame(false);
 		

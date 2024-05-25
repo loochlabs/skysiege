@@ -3,6 +3,7 @@
 
 #include "GridUnitActor.h"
 
+#include "BattleSim.h"
 #include "Coordinates.h"
 #include "GridCellActor.h"
 #include "SkyGameInstance.h"
@@ -47,10 +48,20 @@ const FUnitTemplate& AGridUnitActor::GetTemplate()
 const FUnitStats& AGridUnitActor::GetStats()
 {
 	auto& unitTemplate = GetTemplate();
-
-	//@TODO need to dynamically calculate our stats from tags and bonuses.
 	
-	return unitTemplate.UnitStats;
+	//@TODO need to dynamically calculate our stats from tags and bonuses.
+	// probably calculate this somewhere else in the future
+	static FBattleUnit fakeUnit;
+	fakeUnit.Stats = unitTemplate.UnitStats;
+	FBattleSimulation fakeSim;
+	for(auto& tagData : FBattleSimulation::TagStatus)
+	{
+		if(UnitTags.HasTag(tagData.Key))
+		{
+			tagData.Value.Behavior(fakeUnit, fakeSim);
+		}
+	}
+	return fakeUnit.Stats;
 }
 
 int32 AGridUnitActor::GetSellPrice()
@@ -147,6 +158,7 @@ void AGridUnitActor::HandleBattleEvent(const FBattleEvent& Event)
 	OnBattleEvent(Event);
 }
 
+
 void AGridUnitActor::RefreshTagUpgrades()
 {
 	PendingUpgrades.Empty();
@@ -171,4 +183,17 @@ void AGridUnitActor::UpgradeTags()
 		UnitTags.RemoveTags(upgrade.RequiredTags);
 		UnitTags.AppendTags(upgrade.UpgradeTags);
 	}
+}
+
+void AGridUnitActor::RefreshTags()
+{
+	RefreshTagUpgrades();
+
+	//@TODO calculate current bonus stats here?
+}
+
+FText AGridUnitActor::GetTagTooltip(const FGameplayTag& Tag)
+{
+	const FUnitStats& stats = GetStats();
+	return FBattleSimulation::GetTagDescriptionFormatted(Tag, stats);
 }

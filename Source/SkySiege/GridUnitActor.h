@@ -64,6 +64,10 @@ public:
 
 	void RefreshTagUpgrades();
 	void UpgradeTags();
+	void RefreshTags();
+	
+	UFUNCTION(BlueprintPure)
+	FText GetTagTooltip(const FGameplayTag& Tag);
 	
 	UPROPERTY(BlueprintReadWrite)
 	FName UnitKey;

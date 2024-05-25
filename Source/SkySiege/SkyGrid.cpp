@@ -254,7 +254,7 @@ void ASkyGrid::RefreshUnitBonuses()
 	// refresh upgrades
 	for(auto& unit : units)
 	{
-		unit->RefreshTagUpgrades();
+		unit->RefreshTags();
 	}
 }
 
