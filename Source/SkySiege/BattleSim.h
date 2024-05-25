@@ -58,14 +58,15 @@ struct FBattleUnit
 	void Start(FBattleSimulation& Sim);
 	EBattleUnitStepResult Step(FBattleSimulation& Sim);
 
-	void Bonus_AddPower(FBattleSimulation& Sim);
+	//void Bonus_AddPower(FBattleSimulation& Sim);
+
+	//@CLEAN
+	//void StartAction_AddMaxHP_1000(FBattleSimulation& Sim);
+	//void StartAction_AddFood_25(FBattleSimulation& Sim);
 	
-	void StartAction_AddMaxHP_1000(FBattleSimulation& Sim);
-	void StartAction_AddFood_25(FBattleSimulation& Sim);
-	
-	void Action_DamageEnemy(FBattleSimulation& Sim);
-	void Action_AddFood(FBattleSimulation& Sim);
-	void Action_AddHP(FBattleSimulation& Sim);
+	//void Action_DamageEnemy(FBattleSimulation& Sim);
+	//void Action_AddFood(FBattleSimulation& Sim);
+	//void Action_AddHP(FBattleSimulation& Sim);
 
 	UPROPERTY(BlueprintReadOnly)
 	EBattleID Owner = EBattleID::None;
@@ -203,39 +204,73 @@ struct FBattleSimulation
 	TArray<FBattleEvent> FrameEvents;
 	TArray<FBattleFrame> SavedFrames;
 
-	void SetTag(FGameplayTag& Tag, FName&& TagName)
-	{
-		Tag = FGameplayTag::RequestGameplayTag(TagName);
-	}
-
-	void FillTags()
-	{
-		SetTag(UnitTag_StartAction_AddMaxHP_1000, "Unit.StartAction.AddMaxHP_1000");
-		SetTag(UnitTag_StartAction_AddFood_25, "Unit.StartAction.AddFood_25");
-		
-		SetTag(UnitTag_Bonus_AddPower, "Unit.Bonus.AddPower");
-		SetTag(UnitTag_Bonus_Strong, "Unit.Bonus.Strong");
-
-		SetTag(UnitTag_Action_DamageEnemy, "Unit.Action.DamageEnemy");
-		SetTag(UnitTag_Action_AddFood, "Unit.Action.AddFood");
-		SetTag(UnitTag_Action_AddHP, "Unit.Action.AddHP");
-		
-		SetTag(UnitTag_Job_Farmer, "Unit.Job.Farmer");
-		SetTag(UnitTag_Job_Soldier, "Unit.Job.Soldier");
-		SetTag(UnitTag_Job_Engineer, "Unit.Job.Engineer");
-	}
+	typedef TFunction<void(FBattleUnit&, FBattleSimulation&)> UnitBehavior;
 	
-	FGameplayTag UnitTag_StartAction_AddMaxHP_1000;
-	FGameplayTag UnitTag_StartAction_AddFood_25;
+	TMap<FGameplayTag, UnitBehavior> TagStartActions;
+	TMap<FGameplayTag, UnitBehavior> TagActions;
 	
-	FGameplayTag UnitTag_Bonus_AddPower;
-	FGameplayTag UnitTag_Bonus_Strong;
+	void FillTags();
 	
-	FGameplayTag UnitTag_Action_DamageEnemy;
-	FGameplayTag UnitTag_Action_AddFood;
-	FGameplayTag UnitTag_Action_AddHP;
-	
-	FGameplayTag UnitTag_Job_Farmer;
-	FGameplayTag UnitTag_Job_Soldier;
-	FGameplayTag UnitTag_Job_Engineer;
+	// {
+	// 	auto set_tag = [&](FName&& TagName, UnitBehavior& Func)
+	// 	{
+	// 		TagBehaviors.Add(FGameplayTag::RequestGameplayTag(TagName), Func);
+	// 	};
+	//
+	// 	//@CLEAN
+	// 	//SetTag(UnitTag_StartAction_AddMaxHP_1000, "Unit.StartAction.AddMaxHP_1000");
+	// 	//SetTag(UnitTag_StartAction_AddFood_25, "Unit.StartAction.AddFood_25");
+	// 	set_tag("Unit.StartAction.AddFood", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	// 	{
+	// 		//@TODO behavior
+	// 	} );
+	// 	SetTag(UnitTag_StartAction_AddFood, "Unit.StartAction.AddMaxHP");
+	// 	
+	// 	//SetTag(UnitTag_Bonus_AddPower, "Unit.Bonus.AddPower");
+	// 	//SetTag(UnitTag_Bonus_Strong, "Unit.Bonus.Strong");
+	//
+	// 	SetTag(UnitTag_Action_DamageEnemy, "Unit.Action.DamageEnemy");
+	// 	SetTag(UnitTag_Action_AddFood, "Unit.Action.AddFood");
+	// 	SetTag(UnitTag_Action_AddHP, "Unit.Action.AddHP");
+	// 	
+	// 	SetTag(UnitTag_Job_Farmer, "Unit.Job.Farmer");
+	// 	SetTag(UnitTag_Job_Soldier, "Unit.Job.Soldier");
+	// 	SetTag(UnitTag_Job_Engineer, "Unit.Job.Engineer");
+	//
+	// 	SetTag(UnitTag_Status_Strong, "Unit.Status.Strong");
+	// 	SetTag(UnitTag_Status_Bulky, "Unit.Status.Bulky");
+	// 	SetTag(UnitTag_Status_MeatHead, "Unit.Status.MeatHead");
+	// 	SetTag(UnitTag_Status_Burning, "Unit.Status.Burning");
+	// 	SetTag(UnitTag_Status_Cozy, "Unit.Status.Cozy");
+	// 	SetTag(UnitTag_Status_Eating, "Unit.Status.Eating");
+	// 	SetTag(UnitTag_Status_Fed, "Unit.Status.Fed");
+	// 	SetTag(UnitTag_Status_Overate, "Unit.Status.Overate");
+	// 	SetTag(UnitTag_Status_Glutton, "Unit.Status.Glutton");
+	// }
+	//
+	// //FGameplayTag UnitTag_StartAction_AddMaxHP_1000;
+	// //FGameplayTag UnitTag_StartAction_AddFood_25;
+	// FGameplayTag UnitTag_StartAction_AddFood;
+	// FGameplayTag UnitTag_StartAction_AddMaxHP;
+	//
+	// //FGameplayTag UnitTag_Bonus_AddPower;
+	// //FGameplayTag UnitTag_Bonus_Strong;
+	//
+	// FGameplayTag UnitTag_Action_DamageEnemy;
+	// FGameplayTag UnitTag_Action_AddFood;
+	// FGameplayTag UnitTag_Action_AddHP;
+	//
+	// FGameplayTag UnitTag_Job_Farmer;
+	// FGameplayTag UnitTag_Job_Soldier;
+	// FGameplayTag UnitTag_Job_Engineer;
+	//
+	// FGameplayTag UnitTag_Status_Strong;
+	// FGameplayTag UnitTag_Status_Bulky;
+	// FGameplayTag UnitTag_Status_MeatHead;
+	// FGameplayTag UnitTag_Status_Burning;
+	// FGameplayTag UnitTag_Status_Cozy;
+	// FGameplayTag UnitTag_Status_Eating;
+	// FGameplayTag UnitTag_Status_Fed;
+	// FGameplayTag UnitTag_Status_Overate;
+	// FGameplayTag UnitTag_Status_Glutton;
 };

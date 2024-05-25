@@ -10,25 +10,14 @@
 void FBattleUnit::Start(FBattleSimulation& Sim)
 {
 	StartTime = FMath::Rand() % 500;
-	
-	// Bonus
-	if(Tags.HasTag(Sim.UnitTag_Bonus_AddPower))
+
+	// do start actions, bonuses, statuses
+	TArray<FGameplayTag> tags;
+	Tags.GetGameplayTagArray(tags);
+	for(const FGameplayTag& tag : tags)
 	{
-		Bonus_AddPower(Sim);
-	}
-	if(Tags.HasTag(Sim.UnitTag_Bonus_Strong))
-	{
-		Bonus_AddPower(Sim);
-	}
-	
-	// Start Actions
-	if(Tags.HasTag(Sim.UnitTag_StartAction_AddMaxHP_1000))
-	{
-		StartAction_AddMaxHP_1000(Sim);
-	}
-	if(Tags.HasTag(Sim.UnitTag_StartAction_AddFood_25))
-	{
-		StartAction_AddFood_25(Sim);
+		if(Sim.TagStartActions.Contains(tag))
+			Sim.TagStartActions[tag](*this, Sim);
 	}
 }
 
@@ -60,17 +49,13 @@ EBattleUnitStepResult FBattleUnit::Step(FBattleSimulation& Sim)
 	// actions
 	if(FMath::FRand() < Stats.Competence)
 	{
-		if(Tags.HasTag(Sim.UnitTag_Job_Soldier))
+		// do actions
+		TArray<FGameplayTag> tags;
+		Tags.GetGameplayTagArray(tags);
+		for(const FGameplayTag& tag : tags)
 		{
-			Action_DamageEnemy(Sim);
-		}
-		if(Tags.HasTag(Sim.UnitTag_Job_Farmer))
-		{
-			Action_AddFood(Sim);
-		}
-		if(Tags.HasTag(Sim.UnitTag_Job_Engineer))
-		{
-			Action_AddHP(Sim);
+			if(Sim.TagActions.Contains(tag))
+				Sim.TagActions[tag](*this, Sim);
 		}
 
 		return EBattleUnitStepResult::ActionSuccess;
@@ -80,35 +65,36 @@ EBattleUnitStepResult FBattleUnit::Step(FBattleSimulation& Sim)
 	return EBattleUnitStepResult::ActionFail;
 }
 
-void FBattleUnit::Bonus_AddPower(FBattleSimulation& Sim)
-{
-	Stats.Power += 50;
-}
+// void FBattleUnit::Bonus_AddPower(FBattleSimulation& Sim)
+// {
+// 	Stats.Power += 50;
+// }
 
-void FBattleUnit::StartAction_AddMaxHP_1000(FBattleSimulation& Sim)
-{
-	Sim.GetProfile(Owner).AddMaxHP(Sim, UnitID, Stats.Power * 16);
-}
+//@CLEAN
+// void FBattleUnit::StartAction_AddMaxHP_1000(FBattleSimulation& Sim)
+// {
+// 	Sim.GetProfile(Owner).AddMaxHP(Sim, UnitID, Stats.Power * 16);
+// }
+//
+// void FBattleUnit::StartAction_AddFood_25(FBattleSimulation& Sim)
+// {
+// 	Sim.GetProfile(Owner).AddFood(Sim, UnitID, Stats.Power); 
+// }
 
-void FBattleUnit::StartAction_AddFood_25(FBattleSimulation& Sim)
-{
-	Sim.GetProfile(Owner).AddFood(Sim, UnitID, Stats.Power); 
-}
-
-void FBattleUnit::Action_DamageEnemy(FBattleSimulation& Sim)
-{
-	Sim.GetEnemyProfileOf(Owner).RemoveHP(Sim, UnitID, Stats.Power);
-}
-
-void FBattleUnit::Action_AddFood(FBattleSimulation& Sim)
-{
-	Sim.GetProfile(Owner).AddFood(Sim, UnitID, Stats.Power);
-}
-
-void FBattleUnit::Action_AddHP(FBattleSimulation& Sim)
-{
-	Sim.GetProfile(Owner).AddHP(Sim, UnitID, Stats.Power);
-}
+// void FBattleUnit::Action_DamageEnemy(FBattleSimulation& Sim)
+// {
+// 	Sim.GetEnemyProfileOf(Owner).RemoveHP(Sim, UnitID, Stats.Power);
+// }
+//
+// void FBattleUnit::Action_AddFood(FBattleSimulation& Sim)
+// {
+// 	Sim.GetProfile(Owner).AddFood(Sim, UnitID, Stats.Power);
+// }
+//
+// void FBattleUnit::Action_AddHP(FBattleSimulation& Sim)
+// {
+// 	Sim.GetProfile(Owner).AddHP(Sim, UnitID, Stats.Power);
+// }
 
 //--------------------------
 //	Battle PROFILES
@@ -286,4 +272,40 @@ void FBattleSimulation::AddEvent(EBattleEventID EventID, EBattleID ID, int32 Sou
 	event.SourceUnitID = SourceUnitID;
 	event.Amount = Amount;
 	FrameEvents.Add(event);
+}
+
+void FBattleSimulation::FillTags()
+{
+	// ~~~~~ Start Actions ~~~~~
+	auto add_start_action = [&](FName&& TagName, UnitBehavior Func)
+	{
+		TagStartActions.Add(FGameplayTag::RequestGameplayTag(TagName), Func);
+	};
+
+	add_start_action("Unit.StartAction.AddFood", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Sim.GetProfile(Unit.Owner).AddFood(Sim, Unit.UnitID, Unit.Stats.Power); 
+	} );
+
+	// ~~~~~ Actions ~~~~~
+	auto add_action = [&](FName&& TagName, UnitBehavior Func)
+	{
+		TagActions.Add(FGameplayTag::RequestGameplayTag(TagName), Func);
+	};
+	
+	// Jobs
+	add_action("Unit.Job.Farmer", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Sim.GetProfile(Unit.Owner).AddFood(Sim, Unit.UnitID, Unit.Stats.Power);
+	} );
+
+	add_action("Unit.Job.Soldier", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Sim.GetEnemyProfileOf(Unit.Owner).RemoveHP(Sim, Unit.UnitID, Unit.Stats.Power);
+	} );
+
+	add_action("Unit.Job.Engineer", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Sim.GetProfile(Unit.Owner).AddHP(Sim, Unit.UnitID, Unit.Stats.Power);
+	} );
 }
