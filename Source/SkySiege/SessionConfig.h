@@ -38,11 +38,23 @@ struct FSessionConfig
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Unit Data")
 	TArray<FUnitTagUpgrade> UnitUpgrades;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Rules")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Battle")
 	int32 WinsRequired = 5;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Rules")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Battle")
 	int32 LosesAllowed = 3;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Battle")
+	int32 BattleStartingMaxHP = 1000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Battle")
+	int32 BattleStartingFood = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Battle")
+	int32 BattleFoodGeneration = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Battle")
+	int32 BattleFoodGenerationRate = 10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
 	int32 StartingWalletAmount = 10;

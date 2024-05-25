@@ -119,6 +119,12 @@ struct FBattleProfile
 	int32 Food = 0;
 
 	UPROPERTY(BlueprintReadOnly)
+	int32 FoodGeneration = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 FoodGenerationRate = 0;
+
+	UPROPERTY(BlueprintReadOnly)
 	int32 FatigueTime = 1000;
 
 	UPROPERTY(BlueprintReadOnly)

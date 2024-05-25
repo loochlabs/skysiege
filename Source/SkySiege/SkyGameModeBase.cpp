@@ -137,7 +137,10 @@ void ASkyGameMode::StartBattleSim()
 		
 		FBattleProfile profile;
 		profile.ID = ID;
-		profile.MaxHP = 1000;
+		profile.MaxHP = Config.BattleStartingMaxHP;
+		profile.Food = Config.BattleStartingFood;
+		profile.FoodGeneration = Config.BattleFoodGeneration;
+		profile.FoodGenerationRate = Config.BattleFoodGenerationRate;
 		static int32 unitID = 0;
 		for(auto& unitPair : unitActors)
 		{
@@ -197,7 +200,4 @@ void ASkyGameMode::StartBattleSim()
 	APlayerController* controller = GEngine->GetFirstLocalPlayerController(GetWorld());
 	ASkyHUD* hud = controller->GetHUD<ASkyHUD>();
 	hud->ShowBattle(battle);
-	
-	//@CLEAN 
-	//UE_LOG(SkyLog, Log, TEXT("Battle sim complete. sizeof=%d"), sizeof(battle));
 }

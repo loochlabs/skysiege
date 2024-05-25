@@ -129,6 +129,11 @@ void FBattleProfile::Start(FBattleSimulation& Sim)
 
 void FBattleProfile::Step(FBattleSimulation& Sim)
 {
+	if(Sim.TimeMS % FoodGenerationRate == 0)
+	{
+		AddFood(Sim, 0, FoodGeneration);
+	}
+	
 	for(auto& unit : Units)
 	{
 		unit.Step(Sim);
