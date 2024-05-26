@@ -465,7 +465,7 @@ void FBattleSimulation::FillTags()
 		Unit.Stats.Power *= 0.5f;
 	},
 	"<Highlight>[Relaxed]</>",
-	"-50% {Power}");
+	"-50% action output");
 
 	add_status("Unit.Element.Death", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
