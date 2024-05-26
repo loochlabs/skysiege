@@ -63,6 +63,9 @@ struct FSessionConfig
 	int32 ShopRerollCost = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
+	int32 ShopOptionsCount = 4;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")
 	TArray<FGameplayTag> ShopPoolTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Shop")

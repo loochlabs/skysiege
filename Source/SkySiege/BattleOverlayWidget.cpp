@@ -32,6 +32,7 @@ void UBattleOverlayWidget::ShowSim(const FBattleSimulation& InSim)
 	bShowSim = true;
 	Sim = InSim;
 	SimFrame = -1;
+	FramesProcessedPerTick = DefaultFramesProcessedPerTick;
 }
 
 void UBattleOverlayWidget::DisplayFrame(int32 FrameTime)

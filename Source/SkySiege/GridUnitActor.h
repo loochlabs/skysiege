@@ -64,6 +64,10 @@ public:
 
 	void RefreshTagUpgrades();
 	void UpgradeTags();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnUpdatedTags();
+	
 	void RefreshTags();
 	
 	UFUNCTION(BlueprintPure)

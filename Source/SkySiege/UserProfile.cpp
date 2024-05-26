@@ -148,7 +148,7 @@ void UUserProfile::ResetShopOptions()
 	CurrentShopOptions.Reset(); //@TODO temp until we can reserve slots
 
 	// the last element should be weight=1
-	for(int32 n = 0; n < NumOfShopOptions; ++n)
+	for(int32 n = 0; n < cfg.ShopOptionsCount; ++n)
 	{
 		float rng = FMath::FRand();
 		for(auto& item : shopPool)
@@ -170,7 +170,7 @@ void UUserProfile::ResetShopOptions()
 			CurrentShopOptions.Add(option);
 		}
 	}
-	check(CurrentShopOptions.Num() == NumOfShopOptions);
+	check(CurrentShopOptions.Num() == cfg.ShopOptionsCount);
 
 	OnUpdatedShop.Broadcast();
 }

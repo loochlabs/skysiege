@@ -175,9 +175,6 @@ public:
 	int32 CurrentLevel = -1;
 
 	UPROPERTY(SaveGame, BlueprintReadWrite)
-	int32 NumOfShopOptions = 6;
-
-	UPROPERTY(SaveGame, BlueprintReadWrite)
 	TArray<FShopOption> CurrentShopOptions;
 
 	FTransactionData ActiveTransaction;

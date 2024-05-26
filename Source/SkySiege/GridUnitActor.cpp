@@ -158,7 +158,6 @@ void AGridUnitActor::HandleBattleEvent(const FBattleEvent& Event)
 	OnBattleEvent(Event);
 }
 
-
 void AGridUnitActor::RefreshTagUpgrades()
 {
 	PendingUpgrades.Empty();
@@ -183,6 +182,7 @@ void AGridUnitActor::UpgradeTags()
 		UnitTags.RemoveTags(upgrade.RequiredTags);
 		UnitTags.AppendTags(upgrade.UpgradeTags);
 	}
+	OnUpdatedTags();
 }
 
 void AGridUnitActor::RefreshTags()

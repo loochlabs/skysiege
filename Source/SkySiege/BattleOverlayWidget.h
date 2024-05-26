@@ -25,7 +25,10 @@ public:
 	void OnDisplayFrame(const FBattleFrame& Frame);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 FramesProcessedPerTick = 1;
+	int32 DefaultFramesProcessedPerTick = 5;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 FramesProcessedPerTick = 5;
 	
 	bool bShowSim = false;
 	FBattleSimulation Sim;
