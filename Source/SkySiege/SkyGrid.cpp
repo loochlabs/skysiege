@@ -165,6 +165,15 @@ void ASkyGrid::CycleFocus()
 	}
 }
 
+void ASkyGrid::CycleFocusToTop()
+{
+	AGridCellActor* cell = GetCell(Focus.Row, Focus.Col);
+	while(!cell->IsTopUnitFocusIndex())
+	{
+		CycleFocus();
+	}
+}
+
 void ASkyGrid::Interact(int32 Row, int32 Col)
 {
 	AGridCellActor* cell = GetCell(Row, Col);
@@ -215,7 +224,6 @@ bool ASkyGrid::PlaceUnit(AGridUnitActor* Unit, int32 Row, int32 Col)
 	}
 	Unit->SetOriginCell(origin);
 	RefreshUnitBonuses();
-	RefreshHighlights();
 	return true;
 }
 

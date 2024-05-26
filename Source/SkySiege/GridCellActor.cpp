@@ -85,6 +85,11 @@ int32 AGridCellActor::GetUnitFocusIndex()
 	return Grid->FocusIndex > 0 && !UnitActors.IsEmpty() ? Grid->FocusIndex % UnitActors.Num() : 0;
 }
 
+bool AGridCellActor::IsTopUnitFocusIndex()
+{
+	return UnitActors.IsEmpty() || Grid->FocusIndex % UnitActors.Num() == (UnitActors.Num()-1);
+}
+
 void AGridCellActor::FocusUnit()
 {
 	int32 unitIdx = GetUnitFocusIndex();
@@ -119,6 +124,23 @@ void AGridCellActor::Interact()
 void AGridCellActor::InsertUnit(AGridUnitActor* Unit)
 {
 	UnitActors.Add(Unit);
+
+	FGameplayTag unitStorage = FGameplayTag::RequestGameplayTag("Unit.Type.Storage");
+	FGameplayTag unitLand = FGameplayTag::RequestGameplayTag("Unit.Type.Land");
+	FGameplayTag unitBuilding = FGameplayTag::RequestGameplayTag("Unit.Type.Building");
+	UnitActors.Sort([&](const AGridUnitActor& lhs, const AGridUnitActor& rhs)
+	{
+		int32 prioLeft = lhs.UnitTags.HasTagExact(unitStorage) ? 0 :
+			lhs.UnitTags.HasTagExact(unitLand) ? 1 :
+			lhs.UnitTags.HasTagExact(unitBuilding) ? 2 : 3;
+
+		int32 prioRight = rhs.UnitTags.HasTagExact(unitStorage) ? 0 :
+			rhs.UnitTags.HasTagExact(unitLand) ? 1 :
+			rhs.UnitTags.HasTagExact(unitBuilding) ? 2 : 3;
+		
+		check(prioLeft != prioRight);
+		return prioLeft < prioRight;
+	});
 }
 
 void AGridCellActor::RemoveUnit(AGridUnitActor* Unit)

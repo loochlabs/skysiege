@@ -91,6 +91,7 @@ public:
 	AGridCellActor* FindValidCell(AGridUnitActor* Unit);
 	void SetFocus(int32 Row, int32 Col);
 	void CycleFocus();
+	void CycleFocusToTop();
 	void Interact(int32 Row, int32 Col);
 	void ClearAllHighlights();
 	void RefreshHighlights();

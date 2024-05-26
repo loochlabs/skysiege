@@ -355,6 +355,10 @@ bool UUserProfile::ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col)
 		return false;
 
 	ActiveTransaction.Reset();
+
+	AGridCellActor* cell = Grid->GetCell(Row, Col);
+	HandleGridFocused(cell);
+	
 	OnUpdatedTransaction.Broadcast();
 	return true;
 }
@@ -390,6 +394,8 @@ void UUserProfile::CancelTransaction()
 
 void UUserProfile::HandleGridFocused(AGridCellActor* Cell)
 {
+	Cell->Grid->CycleFocusToTop();
+
 	//get current transaction shape, set highlight for each cell in shape to our result
 	if(IsTransactionActive())
 	{

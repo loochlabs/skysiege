@@ -47,6 +47,7 @@ public:
 	void BeginFocus();
 
 	int32 GetUnitFocusIndex();
+	bool IsTopUnitFocusIndex();
 	void FocusUnit();
 	
 	UFUNCTION(BlueprintImplementableEvent)
