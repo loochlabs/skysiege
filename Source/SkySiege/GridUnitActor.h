@@ -72,6 +72,9 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	FText GetTagTooltip(const FGameplayTag& Tag);
+
+	UFUNCTION(BlueprintPure)
+	FText GetTagLabel(const FGameplayTag& Tag);
 	
 	UPROPERTY(BlueprintReadWrite)
 	FName UnitKey;

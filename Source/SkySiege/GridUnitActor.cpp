@@ -197,3 +197,8 @@ FText AGridUnitActor::GetTagTooltip(const FGameplayTag& Tag)
 	const FUnitStats& stats = GetStats();
 	return FBattleSimulation::GetTagDescriptionFormatted(Tag, stats);
 }
+
+FText AGridUnitActor::GetTagLabel(const FGameplayTag& Tag)
+{
+	return FText::FromString(FBattleSimulation::GetTagLabel(Tag));
+}

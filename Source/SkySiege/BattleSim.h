@@ -207,6 +207,7 @@ struct FBattleSimulation
 	static TMap<FGameplayTag, FUnitBehaviorData> TagStartActions;
 	static TMap<FGameplayTag, FUnitBehaviorData> TagActions;
 
+	static FString GetTagLabel(const FGameplayTag& Tag);
 	static FString GetTagDescriptionRaw(const FGameplayTag& Tag);
 	static FText GetTagDescriptionFormatted(const FGameplayTag& Tag, const FUnitStats& Stats);
 	static void FillTags();

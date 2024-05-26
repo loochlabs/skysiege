@@ -255,6 +255,23 @@ TMap<FGameplayTag, FBattleSimulation::FUnitBehaviorData> FBattleSimulation::TagS
 TMap<FGameplayTag, FBattleSimulation::FUnitBehaviorData> FBattleSimulation::TagStartActions;
 TMap<FGameplayTag, FBattleSimulation::FUnitBehaviorData> FBattleSimulation::TagActions;
 
+FString FBattleSimulation::GetTagLabel(const FGameplayTag& Tag)
+{
+	if(TagStatus.Contains(Tag))
+	{
+		return FString::Printf(TEXT("%s"), *TagStatus[Tag].Label);
+	}
+	if(TagStartActions.Contains(Tag))
+	{
+		return FString::Printf(TEXT("%s"), *TagStartActions[Tag].Label);
+	}
+	if(TagActions.Contains(Tag))
+	{
+		return FString::Printf(TEXT("%s"), *TagActions[Tag].Label);
+	}
+	return "";
+}
+
 FString FBattleSimulation::GetTagDescriptionRaw(const FGameplayTag& Tag)
 {
 	if(TagStatus.Contains(Tag))
@@ -350,61 +367,61 @@ void FBattleSimulation::FillTags()
 
 	add_status("Unit.Status.Exercising", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Power *= 1.1f;
+		Unit.Stats.Power *= 1.5f;
 	},
-	"<HighlightYellow>[Exercising]</>",
-	"+10% action output.");
+	"<Highlight>[Exercising]</>",
+	"+50% action output.");
 	
 	add_status("Unit.Status.Strong", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Power *= 1.5f;
+		Unit.Stats.Power *= 2.f;
 	},
 	"<HighlightGreen>[Strong]</>",
-	"+50% action output.");
+	"+100% action output.");
 	
 	add_status("Unit.Status.Bulky", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Power *= 3.f;
+		Unit.Stats.Power *= 4.f;
 		Unit.Stats.Cost *= 2.0f;
 	},
 	"<HighlightBlue>[Bulky]</>",
-	"+200% action output. +200% consumption");
+	"+300% action output. +200% consumption");
 	
 	add_status("Unit.Status.MeatHead", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Power *= 5.f;
+		Unit.Stats.Power *= 7.f;
 		Unit.Stats.Cost *= 5.0f;
 	},
 	"<HighlightPurple>[Meat Head]</>",
-	"+400% action output. +400% consumption");
+	"+600% action output. +400% consumption");
 	
 	add_status("Unit.Status.Burning", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Power *= 0.9f;
+		Unit.Stats.Power *= 0.25f;
 	},
-	"<HighlightYellow>[Burning]</>",
-	"-10% action output.");
+	"<Highlight>[Burning]</>",
+	"-75% action output.");
 
 	add_status("Unit.Status.Cozy", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Power *= 1.1f;
+		Unit.Stats.Power *= 1.25f;
 	},
-	"<HighlightYellow>[Cozy]</>",
-	"+10% action output");
+	"<Highlight>[Cozy]</>",
+	"+25% action output");
 	
 	add_status("Unit.Status.Eating", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Cost *= 0.9f;
+		Unit.Stats.Cost *= 0.75f;
 	},
-	"<HighlightYellow>[Eating]</>",
-	"-10% consumption.");
+	"<Highlight>[Eating]</>",
+	"-25% consumption.");
 
 	add_status("Unit.Status.Fed", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Cost *= 0.75f;
+		Unit.Stats.Cost *= 0.55f;
 	},
 	"<HighlightGreen>[Fed]</>",
-	"-25% consumption.");
+	"-50% consumption.");
 
 	add_status("Unit.Status.Overate", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
@@ -421,34 +438,41 @@ void FBattleSimulation::FillTags()
 	"<HighlightPurple>[Glutton]</>",
 	"-100% consumption. +200% {Cooldown}");
 
+	add_status("Unit.Status.Inspired", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Unit.Stats.Cooldown *= 0.75f;
+	},
+	"<Highlight>[Inspired]</>",
+	"-25% {Cooldown}.");
+	
 	// Elements
 	add_status("Unit.Element.Fire", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Competence *= 0.9f;
+		Unit.Stats.Competence *= 0.5f;
 	},
-	"<HighlightYellow>[Hot]</>",
-	"-10% {Competence}");
+	"<Highlight>[Hot]</>",
+	"-50% {Competence}");
 
 	add_status("Unit.Element.Ice", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Cooldown *= 1.1f;
+		Unit.Stats.Cooldown *= 1.5f;
 	},
-	"<HighlightYellow>[Cold]</>",
-	"+10% {Cooldown}");
+	"<Highlight>[Cold]</>",
+	"+50% {Cooldown}");
 	
 	add_status("Unit.Element.Nature", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Power *= 0.9f;
+		Unit.Stats.Power *= 0.5f;
 	},
-	"<HighlightYellow>[Relaxed]</>",
-	"-10% {Power}");
+	"<Highlight>[Relaxed]</>",
+	"-50% {Power}");
 
 	add_status("Unit.Element.Death", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Cost *= 1.1f;
+		Unit.Stats.Cost *= 1.5f;
 	},
-	"<HighlightYellow>[Sick]</>",
-	"+10% consumption");
+	"<Highlight>[Sick]</>",
+	"+50% consumption");
 	
 
 	// Jobs
