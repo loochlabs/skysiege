@@ -37,6 +37,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FSessionConfig Config;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 MatchLevel = 0;
 	
 	UPROPERTY(BlueprintReadOnly)
 	UUserProfile* UserProfile = nullptr;

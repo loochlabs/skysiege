@@ -24,6 +24,7 @@ void ASkyGameMode::BeginPlay()
 
 	FBattleSimulation::FillTags();
 	Config.Setup();
+	MatchLevel = 0;
 	
 	APlayerController* controller = GEngine->GetFirstLocalPlayerController(GetWorld());
 	ASkyHUD* hud = controller->GetHUD<ASkyHUD>();
@@ -74,11 +75,13 @@ void ASkyGameMode::StartPhase(ESessionPhase InPhase)
 {
 	Phase = InPhase;
 	UserProfile->StartPhase(InPhase);
-	OnUpdatedPhase.Broadcast(InPhase);
 
 	switch(InPhase)
 	{
 	case ESessionPhase::Shop:
+
+		MatchLevel++;
+		
 		// teardown existing battle profiles
 		if(IsValid(EnemyProfile))
 		{
@@ -98,12 +101,14 @@ void ASkyGameMode::StartPhase(ESessionPhase InPhase)
 	default:
 		break;
 	}
+
+	OnUpdatedPhase.Broadcast(InPhase);
 }
 
 void ASkyGameMode::StartBattleSim()
 {
 	FBattleSimulation battle = FBattleSimulation();
-
+	
 	// fill battle profile
 	auto create_profile = [&](EBattleID ID, UUserProfile* Profile)
 	{
@@ -123,7 +128,7 @@ void ASkyGameMode::StartBattleSim()
 		
 		FBattleProfile profile;
 		profile.ID = ID;
-		profile.MaxHP = Config.BattleStartingMaxHP;
+		profile.MaxHP = Config.BattleStartingMaxHP * MatchLevel;
 		profile.Food = Config.BattleStartingFood;
 		profile.FoodGeneration = Config.BattleFoodGeneration;
 		profile.FoodGenerationRate = Config.BattleFoodGenerationRate;

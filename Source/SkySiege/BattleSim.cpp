@@ -440,7 +440,7 @@ void FBattleSimulation::FillTags()
 
 	add_status("Unit.Status.Inspired", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
-		Unit.Stats.Cooldown *= 0.75f;
+		Unit.Stats.Cooldown *= 0.25f;
 	},
 	"<Highlight>[Inspired]</>",
 	"-25% {Cooldown}.");
@@ -496,4 +496,12 @@ void FBattleSimulation::FillTags()
 	},
 	"<HighlightOrange>[Engineer]</>",
 	"Every {StatCooldown}s: Repair {StatPower} {Health}. Consume {StatCost} {Food}.");
+
+	add_action("Unit.Job.Cultist", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Sim.GetProfile(Unit.Owner).RemoveHP(Sim, Unit.UnitID, Unit.Stats.Power);
+		Sim.GetEnemyProfileOf(Unit.Owner).RemoveHP(Sim, Unit.UnitID, Unit.Stats.Power);
+	},
+	"<HighlightOrange>[Cultist]</>",
+	"Every {StatCooldown}s: Deal {StatPower} {Damage}. Deal {StatPower} {Damage} to self.");
 }
