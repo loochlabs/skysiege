@@ -301,9 +301,31 @@ void UUserProfile::ClearUnit(AGridUnitActor* Unit)
 	{
 		cell->RemoveUnit(Unit);
 
+		// find all other units applying bonuses to this cell, remove those bonuses
+		for(auto& cellBonus : cell->Grid->Cells)
+		{
+			for(AGridUnitActor* unit : cellBonus.Value->UnitActors)
+			{
+				auto& bonusUnitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(unit->UnitKey);
+				for(auto& bonusCfg : bonusUnitTemplate.BonusConfig)
+				{
+					auto buffCoords = Unit->GetOrientedCoords(bonusCfg.Coords);
+					TArray<AGridCellActor*> buffCells;
+					grid->GetCellShape(buffCells, cellBonus.Value->Row, cellBonus.Value->Col, buffCoords);
+					for(auto& buffCell : buffCells)
+					{
+						if(cell == buffCell)
+						{
+							Unit->UnitTags.RemoveTags(bonusCfg.BonusTags);
+						}
+					}
+				}
+			}
+		}
+		
 		for(AGridUnitActor* unit : cell->UnitActors)
 		{
-			auto& cellUnitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(unit->UnitKey);
+			auto& cellUnitTemplate = ASkyGameMode::Get(this)->GetUnitTemplate(unit->UnitKey);	
 			auto& tags = cellUnitTemplate.TagsRequiredToBuild;
 			if(!tags.IsEmpty() && !cell->HasUnitTags(tags))
 				dependentUnits.AddUnique(unit);
@@ -341,7 +363,7 @@ void UUserProfile::StartTransaction(AGridUnitActor* Unit)
 
 	// lift this unit actor from it's cells, clearing up any dependencies
 	ClearUnit(Unit);
-	Unit->OriginGridCell->Grid->RefreshUnitBonuses();
+	//Unit->OriginGridCell->Grid->RefreshUnitBonuses(); @CLEAN
 	Unit->OriginGridCell->RefreshHighlight();
 	OnUpdatedTransaction.Broadcast();
 }
@@ -355,7 +377,9 @@ bool UUserProfile::ConfirmTransaction(ASkyGrid* Grid, int32 Row, int32 Col)
 		return false;
 
 	ActiveTransaction.Reset();
-
+	
+	GridMain->RefreshUnitBonuses();
+	GridStorage->RefreshUnitBonuses();
 	AGridCellActor* cell = Grid->GetCell(Row, Col);
 	HandleGridFocused(cell);
 	
