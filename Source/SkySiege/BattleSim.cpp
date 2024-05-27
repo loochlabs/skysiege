@@ -450,29 +450,29 @@ void FBattleSimulation::FillTags()
 	{
 		Unit.Stats.Competence *= 0.5f;
 	},
-	"<Highlight>[Hot]</>",
-	"-50% {Competence}");
+	"<img id=\"Land\"/><Highlight>[Hot]</>",
+	"-15% {Competence}");
 
 	add_status("Unit.Element.Ice", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
 		Unit.Stats.Cooldown *= 1.5f;
 	},
-	"<Highlight>[Cold]</>",
-	"+50% {Cooldown}");
+	"<img id=\"Land\"/><Highlight>[Cold]</>",
+	"+15% {Cooldown}");
 	
 	add_status("Unit.Element.Nature", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
 		Unit.Stats.Power *= 0.5f;
 	},
-	"<Highlight>[Relaxed]</>",
-	"-50% action output");
+	"<img id=\"Land\"/><Highlight>[Relaxed]</>",
+	"-15% action output");
 
 	add_status("Unit.Element.Death", [](FBattleUnit& Unit, FBattleSimulation& Sim)
 	{
 		Unit.Stats.Cost *= 1.5f;
 	},
-	"<Highlight>[Sick]</>",
-	"+50% consumption");
+	"<img id=\"Land\"/><Highlight>[Sick]</>",
+	"+15% consumption");
 	
 
 	// Jobs
@@ -504,4 +504,23 @@ void FBattleSimulation::FillTags()
 	},
 	"<HighlightOrange>[Cultist]</>",
 	"Every {StatCooldown}s: Deal {StatPower} {Damage}. Deal {StatPower} {Damage} to self.");
+
+	add_action("Unit.Job.Foreman", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	{
+		Sim.GetProfile(Unit.Owner).AddFood(Sim, Unit.UnitID, Unit.Stats.Power);
+		Sim.GetProfile(Unit.Owner).AddFood(Sim, Unit.UnitID, Unit.Stats.Power);
+		Sim.GetProfile(Unit.Owner).AddFood(Sim, Unit.UnitID, Unit.Stats.Power);
+	},
+	"<HighlightRed>[Foreman]</>",
+	"Every {StatCooldown}s: Gain {StatPower} {Food} x3. Consume {StatCost} {Food}.");
+
+	// ~~~~~~~~ IDEA ~~~~~~~~~~~~~~
+	// add_action("Unit.Job.Foreman", [](FBattleUnit& Unit, FBattleSimulation& Sim)
+	// {
+	// 	Sim.GetEnemyProfileOf(Unit.Owner).RemoveHP(Sim, Unit.UnitID, Unit.Stats.Power);
+	// 	Sim.GetEnemyProfileOf(Unit.Owner).RemoveHP(Sim, Unit.UnitID, Unit.Stats.Power);
+	// 	Sim.GetEnemyProfileOf(Unit.Owner).RemoveHP(Sim, Unit.UnitID, Unit.Stats.Power);
+	// },
+	// "<HighlightRed>[Foreman]</>",
+	// "Every {StatCooldown}s: Deal {StatPower} {Damage} x3. Consume {StatCost} {Food}.");
 }
